@@ -13,7 +13,7 @@ import javax.media.control.QualityControl;
 import java.io.*;
 import java.net.InetAddress;
 
-public class ConfrenceClient
+public class ConferenceClient
 {
 	public static void main (String[] args)
 	{
