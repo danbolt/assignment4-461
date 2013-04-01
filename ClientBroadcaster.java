@@ -175,6 +175,32 @@ public class ClientBroadcaster implements ControllerListener
 		if (processor == null)
 		{
 			return;
+		}
+		
+		System.out.println("ControllerEvent: " + event.toString());
+		if (event instanceof ConfigureCompleteEvent)
+		{
+			//
+		}
+		else if (event instanceof RealizeCompleteEvent)
+		{
+			//
+		}
+		else if (event instanceof PrefetchCompleteEvent)
+		{
+			//
+		}
+		else if (event instanceof EndOfMediaEvent)
+		{
+			//
+		}
+		else if (event instanceof ControllerErrorEvent)
+		{
+			//
+		}
+		else if (event instanceof ControllerClosedEvent)
+		{
+			//
 		}	
 	}
 }
