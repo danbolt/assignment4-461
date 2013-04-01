@@ -180,7 +180,46 @@ public class ClientBroadcaster implements ControllerListener
 		System.out.println("ControllerEvent: " + event.toString());
 		if (event instanceof ConfigureCompleteEvent)
 		{
-			//
+			TrackControl[] tracks = processor.getTrackControls();
+			
+			if (tracks == null || tracks.length < 1)
+			{
+				perror("couldn't find any tracks in the processor");
+			}
+			
+			boolean programmed = false;
+			
+			for (int i = 0; i < tracks.length; i++)
+			{
+				Format format = tracks[i].getFormat();
+				
+				if (tracks[i].isEnabled() && format instanceof VideoFormat && !programmed)
+				{
+					Dimension size = ((VideoFormat)format).getSize();
+					float frameRate = ((VideoFormat)format).getFrameRate();
+					int w = (size.width % 8 == 0 ? size.width : (int)(size.width / 8) * 8);
+					int h = (size.height % 8 == 0 ? size.height : (int)(size.height) * 8);
+
+					VideoFormat jpegFormat = new VideoFormat(VideoFormat.JPEG_RTP, new Dimension(w, h), Format.NOT_SPECIFIED, Format.byteArray, frameRate);
+					
+					tracks[i].setFormat(jpegFormat);
+					System.out.println("Video will be transmitted as:");
+					System.out.println("	" + jpegFormat);
+					
+					programmed = true;
+				}
+			}
+			
+			if (!programmed)
+			{
+				perror("Couldn't find any video tracks available");
+			}	
+			
+			ContentDescriptor cd = new ContentDescriptor(ContentDescriptor.RAW_RTP);
+			processor.setContentDescriptor(cd);
+			
+			processor.realize();
+			player.realize();
 		}
 		else if (event instanceof RealizeCompleteEvent)
 		{
@@ -201,7 +240,7 @@ public class ClientBroadcaster implements ControllerListener
 		else if (event instanceof ControllerClosedEvent)
 		{
 			//
-		}	
+		}
 	}
 }
 
