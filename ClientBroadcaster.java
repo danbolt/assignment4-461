@@ -25,10 +25,12 @@ public class ClientBroadcaster implements ControllerListener
 	private String ipAddress = null;
 	
 	private RTPManager managers[] = null;
-	
+
 	private int port;
 	
 	private float mediaQuality;
+	
+	BroadcasterGUI PP = null;
 	
 	Player player = null;
 	Processor processor = null;
@@ -83,7 +85,7 @@ public class ClientBroadcaster implements ControllerListener
 		
 		try
 		{
-			//player.addControllerListener(new PlayerListener(PP, this, player, processor));
+			player.addControllerListener(new PlayerListener(PP, this, player, processor));
 			processor.addControllerListener(this);
 			
 			processor.configure();
@@ -96,7 +98,34 @@ public class ClientBroadcaster implements ControllerListener
 
 	public void stop()
 	{
-		//
+		synchronized (this)
+		{
+			if (player != null)
+			{
+				player.stop();
+				player.close();
+				player = null;
+			}
+			
+			if (processor != null)
+			{
+				processor.stop();
+				processor.close();
+				processor = null;
+				
+				for (int i = 0; i < managers.length; i++)
+				{
+					if (managers[i] != null)
+					{
+						managers[i].removeTargets("Session ended.");
+						managers[i].dispose();
+						managers[i] = null;
+					}
+				}
+			}
+		}
+		
+		// work with your GUI here to disable/remove stuff
 	}
 	
 	private void perror(String s)
@@ -104,10 +133,49 @@ public class ClientBroadcaster implements ControllerListener
 		System.out.println("BAD ERROR: " + s);
 		System.exit(-1);
 	}
+	
+	void setImageQuality(Player p, float value)
+	{
+		Control[] cs = p.getControls();
+		QualityControl qc = null;
+		VideoFormat jpegFmt = new VideoFormat(VideoFormat.JPEG);
+		
+		for (int i = 0; i < cs.length; i++)
+		{
+			if (cs[i] instanceof QualityControl && cs[i] instanceof Owned)
+			{
+				Object owner = ((Owned)cs[i]).getOwner();
+
+				if (owner instanceof Codec)
+				{
+					Format fmts[] = ((Codec)owner).getSupportedOutputFormats(null);
+					
+					for (int j = 0; j < fmts.length; j++)
+					{
+						if (fmts[j].matches(jpegFmt))
+						{
+							qc = (QualityControl)cs[i];
+							qc.setQuality(value);
+							System.out.println("-- setting JPEG quality at " + value + " on " + qc);
+							break;
+						}
+					}
+				}
+				
+				if (qc != null)
+				{
+					break;
+				}
+			}
+		}
+	}
 
 	public synchronized void controllerUpdate (ControllerEvent event)
 	{
-		//
+		if (processor == null)
+		{
+			return;
+		}	
 	}
 }
 
