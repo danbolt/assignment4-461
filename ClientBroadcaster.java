@@ -1,4 +1,9 @@
 
+// this overall class design is almost entirely based of the example solutions
+// for Assignment 2; none of the code below was copy/pasted, but may be almost
+// identically typed.
+
+
 import java.awt.event.*;
 import java.awt.*;
 
@@ -27,7 +32,7 @@ public class ClientBroadcaster implements ControllerListener
 	
 	Player player = null;
 	Processor processor = null;
-	
+
 	ConferenceClient rootApplication = null;
 	
 	public ClientBroadcaster (MediaLocator locator, String ip, int portBase, float quality, ConferenceClient parent)
@@ -44,9 +49,51 @@ public class ClientBroadcaster implements ControllerListener
 	
 	public synchronized void start ()
 	{
-		//
+		if (locator == null)
+		{
+			perror("Media Locator is null");
+		}
+		
+		DataSource sourceA = null;
+		DataSource sourceB = null;
+		
+		try
+		{
+			sourceA = Manager.createDataSource(locator);
+			sourceB = Manager.createDataSource(locator);
+		}
+		catch (Exception e)
+		{
+			perror("failed to create DataSource objects");
+		}
+		
+		try
+		{
+			processor = Manager.createProcessor(sourceA);
+			player = Manager.createPlayer(sourceB);
+		}
+		catch (NoProcessorException npe)
+		{
+			perror("failed to create processor for media");
+		}
+		catch (Exception ioe)
+		{
+			perror("IOException when creating processors");
+		}
+		
+		try
+		{
+			//player.addControllerListener(new PlayerListener(PP, this, player, processor));
+			processor.addControllerListener(this);
+			
+			processor.configure();
+		}
+		catch (Exception npe)
+		{
+			perror("could not configure processor");
+		}
 	}
-	
+
 	public void stop()
 	{
 		//
@@ -54,7 +101,7 @@ public class ClientBroadcaster implements ControllerListener
 	
 	private void perror(String s)
 	{
-		System.out.println("PERROR: " + s);
+		System.out.println("BAD ERROR: " + s);
 		System.exit(-1);
 	}
 
@@ -63,3 +110,80 @@ public class ClientBroadcaster implements ControllerListener
 		//
 	}
 }
+
+class BroadcasterGUI extends Panel
+{
+	Component vc, cc;
+	
+	BroadcasterGUI (Player p)
+	{
+		setLayout (new BorderLayout());
+		
+		if ((vc = p.getVisualComponent()) != null)
+		{
+			add("Center", vc);
+		}
+	}
+	
+	public Dimension getPrefferedSize()
+	{
+		int w = 0;
+		int h = 0;
+		
+		if (vc != null)
+		{
+			Dimension size = vc.getPreferredSize();
+			w = size.width;
+			h = size.height;
+		}
+		
+		if (cc != null)
+		{
+			Dimension size = cc.getPreferredSize();
+			
+			if (w == 0)
+			{
+				w = size.width;
+			}
+			
+			h = size.height;
+		}
+		
+		if (w < 160)
+		{
+			w = 160;
+		}
+		
+		return new Dimension(w, h);
+	}
+}
+
+class PlayerListener implements ControllerListener
+{
+	BroadcasterGUI PP;
+	ClientBroadcaster mediaSender;
+	Player P;
+	Processor PR;
+	
+	public PlayerListener (BroadcasterGUI PP, ClientBroadcaster MS, Player P, Processor PR)
+	{
+		this.PP = PP;
+		this.mediaSender = MS;
+		this.P = P;
+		this.PR = PR;
+	}
+
+	public synchronized void controllerUpdate(ControllerEvent event)
+	{
+		if (event instanceof RealizeCompleteEvent)
+		{
+			PR.prefetch();
+		}
+		else if (event instanceof EndOfMediaEvent)
+		{
+			mediaSender.stop();
+		}
+	}
+}
+
+
