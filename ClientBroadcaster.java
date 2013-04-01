@@ -37,6 +37,8 @@ public class ClientBroadcaster implements ControllerListener
 
 	ConferenceClient rootApplication = null;
 	
+	DataSource output = null;
+	
 	public ClientBroadcaster (MediaLocator locator, String ip, int portBase, float quality, ConferenceClient parent)
 	{
 		this.locator = locator;
@@ -223,7 +225,49 @@ public class ClientBroadcaster implements ControllerListener
 		}
 		else if (event instanceof RealizeCompleteEvent)
 		{
-			//
+			//SET THE JPEG QUALITY
+			setImageQuality(processor, mediaQuality);
+			
+			output = processor.getDataOutput();
+
+			PushBufferDataSource pbds = (PushBufferDataSource)output;
+			PushBufferStream pbss[] = pbds.getStreams();
+			
+			managers = new RTPManager[pbss.length];
+			SessionAddress localAddr;
+			SessionAddress destAddr;
+			InetAddress ipAddr;
+			SendStream sendStream;
+			int lport;
+			int dport;
+			SourceDescription srcDesList[];
+			
+			for (int i = 0; i < pbss.length; i++)
+			{
+				try
+				{
+					managers[i] = RTPManager.newInstance();
+
+					dport = port+1 + 2*i;
+					lport = port-1 - 2*i;
+					ipAddr = InetAddress.getByName(ipAddress);
+
+					localAddr = new SessionAddress(InetAddress.getLocalHost(), lport);
+					destAddr = new SessionAddress(ipAddr, dport, 1);
+					
+					managers[i].initialize(localAddr);
+					managers[i].addTarget(destAddr);
+					
+					System.out.println("Created RTP session: " + ipAddress + ":" + dport);
+					
+					sendStream = managers[i].createSendStream(output, i);
+					sendStream.start();
+				}
+				catch (Exception e)
+				{
+					//
+				}
+			}
 		}
 		else if (event instanceof PrefetchCompleteEvent)
 		{
