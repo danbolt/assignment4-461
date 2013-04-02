@@ -271,15 +271,21 @@ public class ClientBroadcaster implements ControllerListener
 		}
 		else if (event instanceof PrefetchCompleteEvent)
 		{
-			//
+			PP = new BroadcasterGUI(player);
+			
+			//add panel stuff to GUI
+			
+			processor.start();
+			player.start();
 		}
 		else if (event instanceof EndOfMediaEvent)
 		{
-			//
+			this.stop();
 		}
 		else if (event instanceof ControllerErrorEvent)
 		{
-			//
+			processor = null;
+			perror(((ControllerErrorEvent)event).getMessage());
 		}
 		else if (event instanceof ControllerClosedEvent)
 		{
