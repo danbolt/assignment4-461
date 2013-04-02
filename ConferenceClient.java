@@ -28,6 +28,8 @@ import javax.media.rtp.ReceiveStream;
 public class ConferenceClient extends JFrame implements ActionListener
 {
 	ClientBroadcaster stream = null;
+	
+	public JComponent basePanel;
 
 	public ConferenceClient ()
 	{
@@ -40,6 +42,13 @@ public class ConferenceClient extends JFrame implements ActionListener
 	
 	public void initalize ()
 	{
+		basePanel = new JPanel(false);
+		basePanel.setLayout(new BorderLayout());
+		add(basePanel);
+
+		stream = new ClientBroadcaster(new MediaLocator("file:samples/atime.mov"), "224.0.0.100", 9000, 0.5f, this);
+		stream.start();
+
 		this.setVisible(true);
 	}
 	

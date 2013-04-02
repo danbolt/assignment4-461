@@ -29,7 +29,7 @@ public class ClientBroadcaster implements ControllerListener
 	private int port;
 	
 	private float mediaQuality;
-	
+
 	BroadcasterGUI PP = null;
 	
 	Player player = null;
@@ -127,7 +127,11 @@ public class ClientBroadcaster implements ControllerListener
 			}
 		}
 		
-		// work with your GUI here to disable/remove stuff
+		if (PP != null)
+		{
+			rootApplication.basePanel.remove(PP);
+			PP = null;
+		}
 	}
 	
 	private void perror(String s)
@@ -272,8 +276,8 @@ public class ClientBroadcaster implements ControllerListener
 		else if (event instanceof PrefetchCompleteEvent)
 		{
 			PP = new BroadcasterGUI(player);
-			
-			//add panel stuff to GUI
+			rootApplication.basePanel.add("Center", PP);
+			rootApplication.validate();
 			
 			processor.start();
 			player.start();
