@@ -10,6 +10,7 @@ do
   elif [ "$var" = "$all" ] ; then
      javac -cp ".;custom.jar" ClientBroadcaster.java
      javac -cp ".;custom.jar" ConferenceClient.java
+     javac -cp ".;custom.jar" ClientReceiver.java
   fi
 
 done
