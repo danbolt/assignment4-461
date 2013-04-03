@@ -269,7 +269,21 @@ public class ClientReceiver implements ReceiveStreamListener, SessionListener,Co
 	
 	public synchronized void controllerUpdate(ControllerEvent ce)
 	{
-		//
+		if (ce instanceof RealizeCompleteEvent)
+		{
+			PP = new ReceiverGUI(p);
+			
+			rootApplication.basePanel.add("Center", PP);
+
+			p.start();
+		}
+		
+		if (ce instanceof ControllerErrorEvent)
+		{
+			p.removeControllerListener(this);
+			this.close();
+			System.out.println("INTERNAL ERROR::: " + ce);
+		}
 	}
 }
 
