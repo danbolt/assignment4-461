@@ -60,6 +60,7 @@ public class ClientReceiver implements ReceiveStreamListener, SessionListener,Co
 			SessionAddress destAddr;
 			
 			managers = new RTPManager[mediaSessions.length];
+			sources = new DataSource[mediaSessions.length];
 			receivedEventsSoFar = 0;
 			
 			SessionLabel session;
@@ -225,11 +226,11 @@ public class ClientReceiver implements ReceiveStreamListener, SessionListener,Co
 					{
 						return;
 					}
-					
+
 					p.addControllerListener(this);
 					p.realize();
 				}
-				
+
 				synchronized (dataSync)
 				{
 					sourceFound = true;
@@ -238,7 +239,8 @@ public class ClientReceiver implements ReceiveStreamListener, SessionListener,Co
 			}
 			catch (Exception e)
 			{
-				System.out.println("NewReceiveStreamEvent exception " + e.getMessage());
+				System.out.println("NewReceiveStreamEvent exception:");
+				e.printStackTrace();
 				return;
 			}
 		}
