@@ -53,7 +53,68 @@ public class ClientReceiver implements ReceiveStreamListener, SessionListener,Co
 	
 	protected boolean initalize ()
 	{
-		return false;
+		try
+		{
+			InetAddress addr;
+			SessionAddress localAddr = new SessionAddress();
+			SessionAddress destAddr;
+			
+			managers = new RTPManager[mediaSessions.length];
+			receivedEventsSoFar = 0;
+			
+			SessionLabel session;
+			
+			for (int i = 0; i < mediaSessions.length; i++)
+			{
+				try
+				{
+					session = new SessionLabel(mediaSessions[i]);
+				}
+				catch (IllegalArgumentException e)
+				{
+					System.out.println("Totally failed at parsing the session address: " + mediaSessions[i]);
+					return false;
+				}
+				
+				System.err.println(" - Open RTP session for::: addr: " + session.addr + " port: " + session.port + " ttl: " + session.ttl);
+				
+				managers[i] = (RTPManager) RTPManager.newInstance();
+				managers[i].addSessionListener(this);
+				managers[i].addReceiveStreamListener(this);
+				
+				addr = InetAddress.getByName(session.addr);
+				
+				if (addr.isMulticastAddress())
+				{
+					localAddr = new SessionAddress(addr, session.port, session.ttl);
+					destAddr = new SessionAddress(addr, session.port, session.ttl);
+				}
+				else
+				{
+					localAddr = new SessionAddress(InetAddress.getLocalHost(), session.port);
+					destAddr = new SessionAddress(addr, session.port);
+				}
+				
+				managers[i].initialize(localAddr);
+				
+				BufferControl bc = (BufferControl)managers[i].getControl("javax.media.control.BufferControl");
+				if (bc != null)
+				{
+					bc.setBufferLength(this.mediaBufferSize);
+				}
+				
+				managers[i].addTarget(destAddr);
+			}
+		}
+		catch (Exception e)
+		{
+			System.out.println("Cannot create an RTP session: " + e.getMessage());
+			return false;
+		}
+
+		System.out.println("...waiting for RTP data to be received...");
+		
+		return true;
 	}
 	
 	protected void close ()
