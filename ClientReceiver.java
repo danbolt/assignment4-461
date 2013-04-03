@@ -54,3 +54,47 @@ public class ClientReceiver implements ReceiveStreamListener, SessionListener,Co
 		//
 	}
 }
+
+class ReceiverGUI extends Panel
+{
+	Component vc, cc;
+	
+	ReceiverGUI (Player pl)
+	{
+		setLayout(new BorderLayout());
+		if ((vc = pl.getVisualComponent()) != null)
+		{
+			add("Center", vc);
+		}
+	}
+	
+	public Dimension getPreferredSize()
+	{
+		int w = 0;
+		int h = 0;
+		
+		if (vc != null)
+		{
+			Dimension size = vc.getPreferredSize();
+			w = size.width;
+			h = size.height;
+		}
+		
+		if (cc != null)
+		{
+			Dimension size = cc.getPreferredSize();
+			if (w == 0)
+			{
+				w = size.width;
+			}
+			h += size.height;
+		}
+		
+		if (w < 160)
+		{
+			w = 160;
+		}
+		
+		return new Dimension(w, h);		
+	}
+}
