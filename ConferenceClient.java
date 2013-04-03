@@ -74,6 +74,9 @@ public class ConferenceClient extends JFrame implements ActionListener
 				System.out.println("FAILED to initialize the sessions.");
 				System.exit(-1);
 			}
+
+			//receiver.p.start();
+
 		}
 
 		this.setVisible(true);

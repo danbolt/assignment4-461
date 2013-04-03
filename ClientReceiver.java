@@ -77,7 +77,7 @@ public class ClientReceiver implements ReceiveStreamListener, SessionListener,Co
 				}
 				
 				System.err.println(" - Open RTP session for::: addr: " + session.addr + " port: " + session.port + " ttl: " + session.ttl);
-				
+
 				managers[i] = (RTPManager) RTPManager.newInstance();
 				managers[i].addSessionListener(this);
 				managers[i].addReceiveStreamListener(this);
@@ -274,6 +274,7 @@ public class ClientReceiver implements ReceiveStreamListener, SessionListener,Co
 			PP = new ReceiverGUI(p);
 			
 			rootApplication.basePanel.add("Center", PP);
+			rootApplication.validate();
 
 			p.start();
 		}
@@ -299,7 +300,7 @@ class ReceiverGUI extends Panel
 			add("Center", vc);
 		}
 	}
-	
+
 	public Dimension getPreferredSize()
 	{
 		int w = 0;
