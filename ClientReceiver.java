@@ -117,21 +117,154 @@ public class ClientReceiver implements ReceiveStreamListener, SessionListener,Co
 		return true;
 	}
 	
+	public boolean isFinished()
+	{
+		return this.receivedEventsSoFar == mediaSessions.length;
+	}
+	
 	protected void close ()
 	{
-		//
+		synchronized(this)
+		{
+			if (PP != null)
+			{
+				rootApplication.basePanel.remove(PP);
+				PP = null;
+			}
+			
+			if (p != null)
+			{
+				p.stop();
+				//p.collaborate();
+				//p.listen();
+				
+				p.close();
+				p = null;
+			}
+			
+			//terminate RTP connections
+			for (int i = 0; i < this.managers.length; i++)
+			{
+				if (managers[i] != null)
+				{
+					try
+					{
+						managers[i].removeTargets("terminating RTP session");
+						managers[i].dispose();
+						managers[i] = null;
+					}
+					catch (Exception e)
+					{
+						//do nothing I guess
+					}
+				}
+			}
+
+			//GUI related stuff
+			
+			receivedEventsSoFar = 0;
+		}
 	}
 	
 	// interface update functions
 	
 	public synchronized void update (SessionEvent evt)
 	{
-		//
+		if (evt instanceof NewParticipantEvent)
+		{
+			Participant p = ((NewParticipantEvent)evt).getParticipant();
+			System.out.println(" A new participant/challenger approaches: " + p.getCNAME());
+		}
 	}
 	
 	public synchronized void update (ReceiveStreamEvent evt)
 	{
-		//
+		RTPManager mgr = (RTPManager)evt.getSource();
+		
+		//the following two declarations may evaluate to null at this point
+		Participant participant = evt.getParticipant();
+		ReceiveStream stream = evt.getReceiveStream();
+		
+		if (evt instanceof RemotePayloadChangeEvent)
+		{
+			System.out.println("Received PayloadChangeEvent (RTP)");
+			System.out.println("Sorry, cannot handle the change in payload");
+			System.exit(0);
+		}
+		else if (evt instanceof NewReceiveStreamEvent)
+		{
+			try
+			{
+				stream = ((NewReceiveStreamEvent)evt).getReceiveStream();
+				sources[receivedEventsSoFar] = stream.getDataSource();
+
+				RTPControl ctl = (RTPControl)sources[receivedEventsSoFar].getControl("javax.media.rtp.RTPControl");
+				if (ctl != null)
+				{
+					System.out.println(" - Recevied new RTP stream: " + ctl.getFormat());
+				}
+				else
+				{
+					System.out.println(" - Recevied new RTP stream");
+				}
+				
+				if (participant == null)
+				{
+					System.out.println("The RTP stream sender hasn't been identified.");
+				}
+				else
+				{
+					System.out.println("The name of the RTP stream sender is: " + participant.getCNAME());
+				}
+				
+				if (++receivedEventsSoFar == mediaSessions.length)
+				{
+					DataSource mergedSource = Manager.createMergingDataSource(sources);
+					p = javax.media.Manager.createPlayer(mergedSource);
+					if (p == null)
+					{
+						return;
+					}
+					
+					p.addControllerListener(this);
+					p.realize();
+				}
+				
+				synchronized (dataSync)
+				{
+					sourceFound = true;
+					dataSync.notifyAll();
+				}
+			}
+			catch (Exception e)
+			{
+				System.out.println("NewReceiveStreamEvent exception " + e.getMessage());
+				return;
+			}
+		}
+		else if (evt instanceof StreamMappedEvent)
+		{
+			if (stream != null && stream.getDataSource() != null)
+			{
+				DataSource ds = stream.getDataSource();
+				
+				RTPControl ctl = (RTPControl)ds.getControl("javax.media.rtp.RTPControl");
+				System.out.print("The previously unidentified stream: ");
+				if (ctl != null)
+				{
+					System.out.print(ctl.getFormat() + " ");
+				}
+				System.out.println("had now been identified as sent by: " + participant.getCNAME());
+			}
+		}
+		else if (evt instanceof ByeEvent)
+		{
+			System.out.println("Got a BYE signal from: " + participant.getCNAME());
+			
+			//GUI related stuff for setting buttons
+			
+			this.close();
+		}
 	}
 	
 	public synchronized void controllerUpdate(ControllerEvent ce)
