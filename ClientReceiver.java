@@ -22,9 +22,33 @@ import javax.media.control.BufferControl;
  */
 public class ClientReceiver implements ReceiveStreamListener, SessionListener,ControllerListener
 {
-	public ClientReceiver (/* FIND CUTE ARGUMENTS FOR THIS*/)
+	String mediaSessions[] = null;
+	RTPManager managers[] = null;
+	
+	Player p;
+	
+	ConferenceClient rootApplication;
+	ReceiverGUI PP;
+	
+	int mediaBufferSize;
+	
+	boolean sourceFound = false;
+	Object dataSync = new Object();
+	
+	DataSource[] sources;
+	int receivedEventsSoFar;
+
+	public ClientReceiver (String sessions[], ConferenceClient root, int allocatedBufferSize)
 	{
-		//
+		mediaSessions = sessions;
+		rootApplication = root;
+		mediaBufferSize = allocatedBufferSize;
+		managers = new RTPManager[sessions.length];
+		
+		for (int i = 0; i < sessions.length; i++)
+		{
+			managers[i] = null;
+		}
 	}
 	
 	protected boolean initalize ()
