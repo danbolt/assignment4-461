@@ -261,7 +261,10 @@ public class ClientReceiver implements ReceiveStreamListener, SessionListener,Co
 					System.out.print(ctl.getFormat() + " ");
 				}
 				System.out.println("had now been identified as sent by: " + participant.getCNAME());
-				rootApplication.setTitle(participant.getCNAME());
+				if (rootApplication != null)
+				{
+					rootApplication.setTitle(participant.getCNAME());
+				}
 			}
 		}
 		else if (evt instanceof ByeEvent)
@@ -279,9 +282,9 @@ public class ClientReceiver implements ReceiveStreamListener, SessionListener,Co
 		if (ce instanceof RealizeCompleteEvent)
 		{
 			PP = new ReceiverGUI(p);
-			
-			rootApplication = new ReceiverWindow("Receiver Window", this);
-			
+
+			rootApplication = new ReceiverWindow("Receiver Window", this);  
+
 			rootApplication.basePanel.add("Center", PP);
 			rootApplication.validate();
 
