@@ -57,7 +57,7 @@ public class ConferenceClient extends JFrame implements ActionListener
 
 		if (sending)
 		{
-			stream = new ClientBroadcaster(new MediaLocator("file:samples/atime.mov"), "224.0.0.100", 9000, 0.5f, this);
+			stream = new ClientBroadcaster(new MediaLocator("file:samples/test-mpeg.mpg"), "224.0.0.100", 9000, 0.5f, this);
 			stream.start();
 		}
 		else
