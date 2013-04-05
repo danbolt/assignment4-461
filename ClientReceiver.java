@@ -27,7 +27,7 @@ public class ClientReceiver implements ReceiveStreamListener, SessionListener,Co
 	
 	Player p;
 	
-	ConferenceClient rootApplication;
+	ReceiverWindow rootApplication;
 	ReceiverGUI PP;
 	
 	int mediaBufferSize;
@@ -38,10 +38,10 @@ public class ClientReceiver implements ReceiveStreamListener, SessionListener,Co
 	DataSource[] sources;
 	int receivedEventsSoFar;
 
-	public ClientReceiver (String sessions[], ConferenceClient root, int allocatedBufferSize)
+	public ClientReceiver (String sessions[], int allocatedBufferSize)
 	{
 		mediaSessions = sessions;
-		rootApplication = root;
+		rootApplication = new ReceiverWindow("Receiver Window");
 		mediaBufferSize = allocatedBufferSize;
 		managers = new RTPManager[sessions.length];
 		
@@ -216,8 +216,9 @@ public class ClientReceiver implements ReceiveStreamListener, SessionListener,Co
 				else
 				{
 					System.out.println("The name of the RTP stream sender is: " + participant.getCNAME());
+					rootApplication.setTitle(participant.getCNAME());
 				}
-				
+
 				if (++receivedEventsSoFar == mediaSessions.length)
 				{
 					DataSource mergedSource = Manager.createMergingDataSource(sources);
@@ -257,6 +258,7 @@ public class ClientReceiver implements ReceiveStreamListener, SessionListener,Co
 					System.out.print(ctl.getFormat() + " ");
 				}
 				System.out.println("had now been identified as sent by: " + participant.getCNAME());
+				rootApplication.setTitle(participant.getCNAME());
 			}
 		}
 		else if (evt instanceof ByeEvent)

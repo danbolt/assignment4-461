@@ -68,7 +68,7 @@ public class ConferenceClient extends JFrame implements ActionListener
 			
 			int bufferSize = 350;
 
-			receiver = new ClientReceiver(sessions, this, bufferSize);
+			receiver = new ClientReceiver(sessions, bufferSize);
 			if (!(receiver.initalize()))
 			{
 				System.out.println("FAILED to initialize the sessions.");
