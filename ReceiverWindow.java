@@ -24,9 +24,15 @@ public class ReceiverWindow extends JFrame implements ActionListener
 {
 	public JComponent basePanel;
 	
-	public ReceiverWindow(String windowTitle)
+	private ClientReceiver boss = null;
+	
+	public ReceiverWindow(String windowTitle, ClientReceiver boss)
 	{
 		super(windowTitle);
+		this.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+		this.setResizable(false);
+		
+		this.boss = boss;
 		
 		basePanel = new JPanel(false);
 		basePanel.setLayout(new BorderLayout());

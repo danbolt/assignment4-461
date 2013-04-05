@@ -40,7 +40,7 @@ public class ConferenceClient extends JFrame implements ActionListener
 
 	public ConferenceClient (boolean isSending)
 	{
-		super("Hermes");
+		super("Hermes" + (isSending ? " - send" : " - recv"));
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
 		sending = isSending;
@@ -54,6 +54,8 @@ public class ConferenceClient extends JFrame implements ActionListener
 		basePanel = new JPanel(false);
 		basePanel.setLayout(new BorderLayout());
 		add(basePanel);
+
+		this.setVisible(true);
 
 		if (sending)
 		{
@@ -75,11 +77,7 @@ public class ConferenceClient extends JFrame implements ActionListener
 				System.exit(-1);
 			}
 
-			//receiver.p.start();
-
 		}
-
-		this.setVisible(true);
 	}
 	
 	public void actionPerformed (ActionEvent e)

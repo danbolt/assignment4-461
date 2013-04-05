@@ -41,7 +41,6 @@ public class ClientReceiver implements ReceiveStreamListener, SessionListener,Co
 	public ClientReceiver (String sessions[], int allocatedBufferSize)
 	{
 		mediaSessions = sessions;
-		rootApplication = new ReceiverWindow("Receiver Window");
 		mediaBufferSize = allocatedBufferSize;
 		managers = new RTPManager[sessions.length];
 		
@@ -130,6 +129,10 @@ public class ClientReceiver implements ReceiveStreamListener, SessionListener,Co
 			if (PP != null)
 			{
 				rootApplication.basePanel.remove(PP);
+				
+				rootApplication.dispose();
+				rootApplication = null;
+
 				PP = null;
 			}
 			
@@ -266,7 +269,7 @@ public class ClientReceiver implements ReceiveStreamListener, SessionListener,Co
 			System.out.println("Got a BYE signal from: " + participant.getCNAME());
 			
 			//GUI related stuff for setting buttons
-			
+
 			this.close();
 		}
 	}
@@ -276,6 +279,8 @@ public class ClientReceiver implements ReceiveStreamListener, SessionListener,Co
 		if (ce instanceof RealizeCompleteEvent)
 		{
 			PP = new ReceiverGUI(p);
+			
+			rootApplication = new ReceiverWindow("Receiver Window", this);
 			
 			rootApplication.basePanel.add("Center", PP);
 			rootApplication.validate();
