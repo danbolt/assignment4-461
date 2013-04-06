@@ -25,11 +25,13 @@ import javax.media.MediaLocator;
 import javax.media.Player;
 import javax.media.rtp.ReceiveStream;
 
+import java.util.ArrayList;
+
 public class ConferenceClient extends JFrame implements ActionListener
 {
 	ClientBroadcaster stream = null;
 	ClientReceiver receiver = null;
-	
+
 	public JComponent basePanel;
 	
 	/* FOR TEMPORARY TESTING REMOVE THIS LATER */
@@ -37,11 +39,15 @@ public class ConferenceClient extends JFrame implements ActionListener
 	private boolean sending;
 	
 	/* END OF TEMP TESTING CODE (LOLOLOL AGILE SCRUM PROTOTYPING ETC) */
+	
+	private ArrayList<ClientReceiver> receiverList = null;
 
 	public ConferenceClient (boolean isSending)
 	{
-		super("Hermes");
+		super("Hermes ::: " + System.getProperty("user.name"));
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		
+		receiverList = new ArrayList<ClientReceiver>();
 		
 		sending = isSending;
 
@@ -55,31 +61,54 @@ public class ConferenceClient extends JFrame implements ActionListener
 		basePanel.setLayout(new BorderLayout());
 		add(basePanel);
 
+		this.setVisible(true);
+		
+		String ipA = "224.0.0.100";
+		int portA = 9000;
+		
+		String ipB = "224.0.0.200";
+		int portB = 10000;
+		
 		if (sending)
 		{
-			stream = new ClientBroadcaster(new MediaLocator("file:samples/test-mpeg.mpg"), "224.0.0.100", 9000, 0.5f, this);
+			stream = new ClientBroadcaster(new MediaLocator("file:samples/test-mpeg.mpg"), ipA, portA, 0.5f, this);
 			stream.start();
+	
+			String[] sessions = new String[2];
+			sessions[0] = ipB + '/' + portB;
+			sessions[1] = ipB + '/' + (portB+2);
+			
+			int bufferSize = 350;
+	
+			receiver = new ClientReceiver(sessions, bufferSize);
+			if (!(receiver.initalize()))
+			{
+				System.out.println("FAILED to initialize a session");
+				System.exit(-1);
+			}
+			
+			receiverList.add(receiver);
 		}
 		else
 		{
+			stream = new ClientBroadcaster(new MediaLocator("file:samples/test-mpeg.mpg"), ipB, portB, 0.5f, this);
+			stream.start();
+	
 			String[] sessions = new String[2];
-			sessions[0] = "224.0.0.100" + '/' + 9000;
-			sessions[1] = "224.0.0.100" + '/' + (9000+2);
+			sessions[0] = ipA + '/' + portA;
+			sessions[1] = ipA + '/' + (portA+2);
 			
 			int bufferSize = 350;
-
-			receiver = new ClientReceiver(sessions, this, bufferSize);
+	
+			receiver = new ClientReceiver(sessions, bufferSize);
 			if (!(receiver.initalize()))
 			{
-				System.out.println("FAILED to initialize the sessions.");
+				System.out.println("FAILED to initialize a session");
 				System.exit(-1);
 			}
-
-			//receiver.p.start();
-
+			
+			receiverList.add(receiver);
 		}
-
-		this.setVisible(true);
 	}
 	
 	public void actionPerformed (ActionEvent e)

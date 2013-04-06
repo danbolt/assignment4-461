@@ -11,6 +11,7 @@ do
      javac -cp ".;custom.jar" ClientBroadcaster.java
      javac -cp ".;custom.jar" ConferenceClient.java
      javac -cp ".;custom.jar" ClientReceiver.java
+     javac -cp ".;custom.jar" ReceiverWindow.java
   fi
 
 done

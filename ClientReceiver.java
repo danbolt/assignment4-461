@@ -27,7 +27,7 @@ public class ClientReceiver implements ReceiveStreamListener, SessionListener,Co
 	
 	Player p;
 	
-	ConferenceClient rootApplication;
+	ReceiverWindow rootApplication;
 	ReceiverGUI PP;
 	
 	int mediaBufferSize;
@@ -38,10 +38,9 @@ public class ClientReceiver implements ReceiveStreamListener, SessionListener,Co
 	DataSource[] sources;
 	int receivedEventsSoFar;
 
-	public ClientReceiver (String sessions[], ConferenceClient root, int allocatedBufferSize)
+	public ClientReceiver (String sessions[], int allocatedBufferSize)
 	{
 		mediaSessions = sessions;
-		rootApplication = root;
 		mediaBufferSize = allocatedBufferSize;
 		managers = new RTPManager[sessions.length];
 		
@@ -130,6 +129,10 @@ public class ClientReceiver implements ReceiveStreamListener, SessionListener,Co
 			if (PP != null)
 			{
 				rootApplication.basePanel.remove(PP);
+				
+				rootApplication.dispose();
+				rootApplication = null;
+
 				PP = null;
 			}
 			
@@ -216,8 +219,12 @@ public class ClientReceiver implements ReceiveStreamListener, SessionListener,Co
 				else
 				{
 					System.out.println("The name of the RTP stream sender is: " + participant.getCNAME());
+					if (rootApplication != null)
+					{
+						rootApplication.setTitle(participant.getCNAME());
+					}
 				}
-				
+
 				if (++receivedEventsSoFar == mediaSessions.length)
 				{
 					DataSource mergedSource = Manager.createMergingDataSource(sources);
@@ -257,6 +264,10 @@ public class ClientReceiver implements ReceiveStreamListener, SessionListener,Co
 					System.out.print(ctl.getFormat() + " ");
 				}
 				System.out.println("had now been identified as sent by: " + participant.getCNAME());
+				if (rootApplication != null)
+				{
+					rootApplication.setTitle(participant.getCNAME());
+				}
 			}
 		}
 		else if (evt instanceof ByeEvent)
@@ -264,7 +275,7 @@ public class ClientReceiver implements ReceiveStreamListener, SessionListener,Co
 			System.out.println("Got a BYE signal from: " + participant.getCNAME());
 			
 			//GUI related stuff for setting buttons
-			
+
 			this.close();
 		}
 	}
@@ -274,7 +285,9 @@ public class ClientReceiver implements ReceiveStreamListener, SessionListener,Co
 		if (ce instanceof RealizeCompleteEvent)
 		{
 			PP = new ReceiverGUI(p);
-			
+
+			rootApplication = new ReceiverWindow("Receiver Window", this);  
+
 			rootApplication.basePanel.add("Center", PP);
 			rootApplication.validate();
 
