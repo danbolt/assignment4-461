@@ -1,3 +1,6 @@
+import java.net.*;
+import java.io.*;
+
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JRadioButton;
@@ -36,6 +39,8 @@ import java.util.ArrayList;
 
 public class ConferenceClient extends JFrame implements ActionListener
 {
+	ClientConnection serverConnection = null;
+	
 	ClientBroadcaster stream = null;
 	ClientReceiver receiver = null;
 	
@@ -94,6 +99,19 @@ public class ConferenceClient extends JFrame implements ActionListener
 			JOptionPane.showMessageDialog(null, inputs, "Please enter the server data", JOptionPane.PLAIN_MESSAGE);
 			serverIP = ipAddressField.getText();
 			serverPort = Integer.parseInt(portField.getText());
+		}
+		
+		try
+		{
+			serverConnection = new ClientConnection(InetAddress.getByName(outputIP), InetAddress.getByName(serverIP), 8000, System.getProperty("user.name"));
+			Thread t = new Thread(serverConnection);
+			t.start();
+		}
+		catch (Exception e)
+		{
+			System.out.println("Error creating server connection");
+			e.printStackTrace();
+			System.exit(1);
 		}
 
 		this.setSize(300, 300);
@@ -171,7 +189,10 @@ public class ConferenceClient extends JFrame implements ActionListener
 			}
 		});
 		clientsPanel.add(clientsTable, BorderLayout.CENTER);
-		fillRefreshTable(infoList);
+		JButton button = new JButton("refresh");
+		button.addActionListener(this);
+		button.setActionCommand("refillTable");
+		clientsPanel.add(button, BorderLayout.LINE_START);
 		tabs.addTab("Clients", null, clientsPanel, "Listing of other available clients on the network");
 
 		add(tabs);
@@ -187,6 +208,7 @@ public class ConferenceClient extends JFrame implements ActionListener
 	{
 		if ("refillTable".equals(e.getActionCommand()))
 		{
+			infoList = serverConnection.getParticpants();
 			fillRefreshTable(infoList);
 		}
 	}
