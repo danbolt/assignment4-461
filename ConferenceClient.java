@@ -52,6 +52,9 @@ public class ConferenceClient extends JFrame implements ActionListener
 	private String outputIP = null;
 	private int outputPort = -1;
 	
+	private String serverIP = null;
+	private int serverPort = -1;
+	
 	private boolean sending;
 
 	/* END OF TEMP TESTING CODE (LOLOLOL AGILE SCRUM PROTOTYPING ETC) */
@@ -81,6 +84,16 @@ public class ConferenceClient extends JFrame implements ActionListener
 			JOptionPane.showMessageDialog(null, inputs, "Please enter your multicast information.", JOptionPane.PLAIN_MESSAGE);
 			outputIP = ipAddressField.getText();
 			outputPort = Integer.parseInt(portField.getText());
+		}
+		
+		//prompt for server information
+		{
+			JTextField ipAddressField = new JTextField();
+			JTextField portField = new JTextField();
+			final JComponent[] inputs = new JComponent[] { new JLabel("Server IP"), ipAddressField, new JLabel("Server Port"), portField};
+			JOptionPane.showMessageDialog(null, inputs, "Please enter the server data", JOptionPane.PLAIN_MESSAGE);
+			serverIP = ipAddressField.getText();
+			serverPort = Integer.parseInt(portField.getText());
 		}
 
 		this.setSize(300, 300);
