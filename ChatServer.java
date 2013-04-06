@@ -5,7 +5,7 @@ import java.util.*;
 
 public class ChatServer {
 
-  private static int port=8000, maxConnections=0;
+  private static int port, maxConnections=0;
   public ArrayList<ClientInfo> clients = new ArrayList();
 
 
@@ -13,8 +13,13 @@ public class ChatServer {
 	  clients.add(client);
   }
 
-  public synchronized boolean removeClient (ClientInfo client) {
-	  return clients.remove(client);
+  public synchronized void removeClient (ClientInfo client) {
+	  for (int i = 0; i < clients.size(); i++) {
+		  if (clients.get(i).ip.equals(client.ip) && clients.get(i).name.equals(client.name) && clients.get(i).port == client.port) {
+			  clients.remove(i);
+		  }
+	  }
+
   }
 
   public synchronized ClientInfo getClient (int i) {
@@ -33,7 +38,8 @@ public class ChatServer {
 	  return different;
   }
 
-  public ChatServer () {
+  public ChatServer (int port) {
+	 this.port = port;
 	 int i=0;
 
     try{
@@ -56,7 +62,13 @@ public class ChatServer {
 
   // Listen for incoming connections and handle them
   public static void main(String[] args) {
-      ChatServer c = new ChatServer ();
+	  int p = 8000;
+	  try {
+		  p = Integer.parseInt(args[0]);
+	  } catch (Exception e) {
+		  e.printStackTrace();
+	  }
+      ChatServer c = new ChatServer (p);
   }
 
 }
@@ -64,21 +76,32 @@ public class ChatServer {
 class doComms implements Runnable {
     private Socket server;
     ChatServer c;
-    ArrayList<ClientInfo> list = new ArrayList();
+    ArrayList<ClientInfo> list = new ArrayList(); //Local list of clients
+
+    OutputStream os;
+	ObjectOutputStream out;
+	InputStream is;
+	ObjectInputStream in;
 
     doComms(Socket server, ChatServer chat) {
       this.server=server;
       c = chat;
     }
+    public void updateList () {
+		this.list = new ArrayList();
+		for (int i = 0; i < c.clients.size(); i++) {
+			list.add(c.clients.get(i));
+		}
+	}
 
     public void run () {
 
 
       try {
-        OutputStream os = server.getOutputStream();
-		ObjectOutputStream out = new ObjectOutputStream(os);
-		InputStream is = server.getInputStream();
-		ObjectInputStream in = new ObjectInputStream(is);
+        os = server.getOutputStream();
+		out = new ObjectOutputStream(os);
+		is = server.getInputStream();
+		in = new ObjectInputStream(is);
 
         ClientInfo message;
         boolean listChanged;
@@ -90,6 +113,8 @@ class doComms implements Runnable {
 			for (int i = 0; i < c.clients.size(); i++) {
 				if (list.size() != c.clients.size() || !c.clients.get(i).equals(list.get(i))) {
 					listChanged = true;
+					this.updateList();
+					System.out.println("List changed!");
 					break;
 				}
 			}
@@ -98,6 +123,8 @@ class doComms implements Runnable {
 				out.writeObject(new ClientInfo("NEW", "" , 0));
 				for (int i = 0; i < list.size(); i++) {
 			        out.writeObject(list.get(i));
+			        System.out.println("Sending new client data");
+			        System.out.println(list.get(i).name);
 				}
 				out.writeObject(new ClientInfo("END", "" , 0));
 			}
@@ -106,18 +133,29 @@ class doComms implements Runnable {
 			//Receive from client
 			message = (ClientInfo)in.readObject();
 
-			if (c.differentClient(message)) {  //If new client (new client defined as having different ip/port/name than current clients)
+			if (message.removeThis == true) {
+				c.removeClient(message);
+
+				out.writeObject(new ClientInfo("CONNECTIONEND", "", 0));
+				break;
+			} else if (message.ip.equals("QUERY")) {
+				out.writeObject(new ClientInfo("NONE", "", 0));
+			} else if (c.differentClient(message)) {  //If new client (new client defined as having different ip/port/name than current clients)
 
 			    //Add new client
 			    c.addClient(message);
+			    System.out.println("Adding client");
 		    }
 
 
 
 		}
 
-        //server.close();
-      } catch (Exception e) {
+		in.close();
+		out.close();
+		server.close();
+		return;
+	  } catch (Exception e) {
         System.out.println("Exception!");
         e.printStackTrace();
       }
