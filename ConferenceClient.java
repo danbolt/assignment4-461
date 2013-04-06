@@ -64,7 +64,7 @@ public class ConferenceClient extends JFrame implements ActionListener
 		infoList = new ArrayList<ClientInfo>();
 		
 		infoList.add(new ClientInfo("224.0.0.100", "finn", 9000));
-		infoList.add(new ClientInfo("224.0.0.101", "jake", 9000));
+		infoList.add(new ClientInfo("224.0.0.200", "jake", 10000));
 
 		sending = isSending;
 
@@ -124,6 +124,21 @@ public class ConferenceClient extends JFrame implements ActionListener
 					int column = target.getSelectedColumn();
 					
 					//System.out.println("ROW: " + clientsTable.getValueAt(row, 0));
+					
+					String[] sessions = new String[2];
+					sessions[0] = (String)clientsTable.getValueAt(row, 1) + '/' + Integer.parseInt((String)(clientsTable.getValueAt(row, 2)));
+					sessions[1] = (String)clientsTable.getValueAt(row, 1) + '/' + (Integer.parseInt((String)(clientsTable.getValueAt(row, 2))) + 2);
+					
+					int bufferSize = 350;
+			
+					receiver = new ClientReceiver(sessions, bufferSize);
+					if (!(receiver.initalize()))
+					{
+						System.out.println("FAILED to initialize a session");
+						System.exit(-1);
+					}
+					
+					receiverList.add(receiver);
 				}
 			}
 		});
@@ -135,20 +150,16 @@ public class ConferenceClient extends JFrame implements ActionListener
 
 		this.setVisible(true);
 		
-		String ipA = "224.0.0.100";
-		int portA = 9000;
-
-		String ipB = "224.0.0.200";
-		int portB = 10000;
-		
 		if (sending)
 		{
-			stream = new ClientBroadcaster(new MediaLocator("file:samples/test-mpeg.mpg"), ipA, portA, 0.5f, this);
+			stream = new ClientBroadcaster(new MediaLocator("file:samples/test-mpeg.mpg"), infoList.get(0).ip, infoList.get(0).port, 0.5f, this);
 			stream.start();
-	
+			
+			/*
+
 			String[] sessions = new String[2];
-			sessions[0] = ipB + '/' + portB;
-			sessions[1] = ipB + '/' + (portB+2);
+			sessions[0] = infoList.get(1).ip + '/' + infoList.get(1).port;
+			sessions[1] = infoList.get(1).ip + '/' + (infoList.get(1).port+2);
 			
 			int bufferSize = 350;
 	
@@ -160,16 +171,20 @@ public class ConferenceClient extends JFrame implements ActionListener
 			}
 			
 			receiverList.add(receiver);
+			
+			*/
 		}
 		else
 		{
-			stream = new ClientBroadcaster(new MediaLocator("file:samples/test-mpeg.mpg"), ipB, portB, 0.5f, this);
+
+			stream = new ClientBroadcaster(new MediaLocator("file:samples/test-mpeg.mpg"), infoList.get(1).ip, infoList.get(1).port, 0.5f, this);
 			stream.start();
 	
+	/*
 			String[] sessions = new String[2];
-			sessions[0] = ipA + '/' + portA;
-			sessions[1] = ipA + '/' + (portA+2);
-			
+			sessions[0] = infoList.get(0).ip + '/' + infoList.get(0).port;
+			sessions[1] = infoList.get(0).ip + '/' + (infoList.get(0).port+2);
+
 			int bufferSize = 350;
 	
 			receiver = new ClientReceiver(sessions, bufferSize);
@@ -180,6 +195,7 @@ public class ConferenceClient extends JFrame implements ActionListener
 			}
 
 			receiverList.add(receiver);
+			*/
 		}
 	}
 	
