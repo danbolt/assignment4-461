@@ -29,6 +29,7 @@ import java.awt.event.KeyEvent;
 import javax.media.ControllerListener;
 import javax.media.MediaLocator;
 import javax.media.Player;
+import javax.media.rtp.RTPManager;
 import javax.media.rtp.ReceiveStream;
 
 import java.util.ArrayList;
@@ -47,7 +48,7 @@ public class ConferenceClient extends JFrame implements ActionListener
 	//table data for other clients
 	String[] columns = {"Name", "Multicast IP", "Port"};
 	String[][] rowData = {{"foo", "test", "test"}};
-	
+
 	private String outputIP = null;
 	private int outputPort = -1;
 	
@@ -66,7 +67,7 @@ public class ConferenceClient extends JFrame implements ActionListener
 		
 		receiverList = new ArrayList<ClientReceiver>();
 		infoList = new ArrayList<ClientInfo>();
-		
+
 		infoList.add(new ClientInfo("224.0.0.100", "finn", 9000));
 		infoList.add(new ClientInfo("224.0.0.200", "jake", 10000));
 
@@ -145,7 +146,7 @@ public class ConferenceClient extends JFrame implements ActionListener
 					
 					int bufferSize = 350;
 			
-					receiver = new ClientReceiver(sessions, bufferSize);
+					receiver = new ClientReceiver(sessions, bufferSize, (String)(clientsTable.getValueAt(row, 0)));
 					if (!(receiver.initalize()))
 					{
 						System.out.println("FAILED to initialize a session");

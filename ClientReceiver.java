@@ -38,12 +38,16 @@ public class ClientReceiver implements ReceiveStreamListener, SessionListener,Co
 	
 	DataSource[] sources;
 	int receivedEventsSoFar;
+	
+	String remoteUserName;
 
-	public ClientReceiver (String sessions[], int allocatedBufferSize)
+	public ClientReceiver (String sessions[], int allocatedBufferSize, String remoteUserName)
 	{
 		mediaSessions = sessions;
 		mediaBufferSize = allocatedBufferSize;
 		managers = new RTPManager[sessions.length];
+		
+		this.remoteUserName = remoteUserName;
 		
 		for (int i = 0; i < sessions.length; i++)
 		{
@@ -222,7 +226,7 @@ public class ClientReceiver implements ReceiveStreamListener, SessionListener,Co
 					System.out.println("The name of the RTP stream sender is: " + participant.getCNAME());
 					if (rootApplication != null)
 					{
-						rootApplication.setTitle(participant.getCNAME());
+						rootApplication.setTitle(remoteUserName);
 					}
 				}
 
@@ -267,7 +271,7 @@ public class ClientReceiver implements ReceiveStreamListener, SessionListener,Co
 				System.out.println("had now been identified as sent by: " + participant.getCNAME());
 				if (rootApplication != null)
 				{
-					rootApplication.setTitle(participant.getCNAME());
+					rootApplication.setTitle(remoteUserName);
 				}
 			}
 		}
