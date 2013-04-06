@@ -2,6 +2,7 @@ import java.io.*;
 import java.awt.*;
 import java.net.*;
 import java.awt.event.*;
+import java.awt.event.WindowAdapter;
 import java.util.Vector;
 
 import javax.media.*;
@@ -37,12 +38,16 @@ public class ClientReceiver implements ReceiveStreamListener, SessionListener,Co
 	
 	DataSource[] sources;
 	int receivedEventsSoFar;
+	
+	String remoteUserName;
 
-	public ClientReceiver (String sessions[], int allocatedBufferSize)
+	public ClientReceiver (String sessions[], int allocatedBufferSize, String remoteUserName)
 	{
 		mediaSessions = sessions;
 		mediaBufferSize = allocatedBufferSize;
 		managers = new RTPManager[sessions.length];
+		
+		this.remoteUserName = remoteUserName;
 		
 		for (int i = 0; i < sessions.length; i++)
 		{
@@ -135,7 +140,7 @@ public class ClientReceiver implements ReceiveStreamListener, SessionListener,Co
 
 				PP = null;
 			}
-			
+
 			if (p != null)
 			{
 				p.stop();
@@ -221,7 +226,7 @@ public class ClientReceiver implements ReceiveStreamListener, SessionListener,Co
 					System.out.println("The name of the RTP stream sender is: " + participant.getCNAME());
 					if (rootApplication != null)
 					{
-						rootApplication.setTitle(participant.getCNAME());
+						rootApplication.setTitle(remoteUserName);
 					}
 				}
 
@@ -266,7 +271,7 @@ public class ClientReceiver implements ReceiveStreamListener, SessionListener,Co
 				System.out.println("had now been identified as sent by: " + participant.getCNAME());
 				if (rootApplication != null)
 				{
-					rootApplication.setTitle(participant.getCNAME());
+					rootApplication.setTitle(remoteUserName);
 				}
 			}
 		}
@@ -286,14 +291,22 @@ public class ClientReceiver implements ReceiveStreamListener, SessionListener,Co
 		{
 			PP = new ReceiverGUI(p);
 
-			rootApplication = new ReceiverWindow("Receiver Window", this);  
+			rootApplication = new ReceiverWindow("Receiver Window", this);
+			rootApplication.addWindowListener(new java.awt.event.WindowAdapter()
+			{
+				@Override
+				public void windowClosing(java.awt.event.WindowEvent windowEvent)
+				{
+					close();
+				}
+			});
 
 			rootApplication.basePanel.add("Center", PP);
 			rootApplication.validate();
 
 			p.start();
 		}
-		
+
 		if (ce instanceof ControllerErrorEvent)
 		{
 			p.removeControllerListener(this);
