@@ -219,7 +219,10 @@ public class ClientReceiver implements ReceiveStreamListener, SessionListener,Co
 				else
 				{
 					System.out.println("The name of the RTP stream sender is: " + participant.getCNAME());
-					rootApplication.setTitle(participant.getCNAME());
+					if (rootApplication != null)
+					{
+						rootApplication.setTitle(participant.getCNAME());
+					}
 				}
 
 				if (++receivedEventsSoFar == mediaSessions.length)

@@ -25,11 +25,13 @@ import javax.media.MediaLocator;
 import javax.media.Player;
 import javax.media.rtp.ReceiveStream;
 
+import java.util.ArrayList;
+
 public class ConferenceClient extends JFrame implements ActionListener
 {
 	ClientBroadcaster stream = null;
 	ClientReceiver receiver = null;
-	
+
 	public JComponent basePanel;
 	
 	/* FOR TEMPORARY TESTING REMOVE THIS LATER */
@@ -37,11 +39,15 @@ public class ConferenceClient extends JFrame implements ActionListener
 	private boolean sending;
 	
 	/* END OF TEMP TESTING CODE (LOLOLOL AGILE SCRUM PROTOTYPING ETC) */
+	
+	private ArrayList<ClientReceiver> receiverList = null;
 
 	public ConferenceClient (boolean isSending)
 	{
-		super("Hermes" + (isSending ? " - send" : " - recv"));
+		super("Hermes ::: " + System.getProperty("user.name"));
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		
+		receiverList = new ArrayList<ClientReceiver>();
 		
 		sending = isSending;
 
@@ -73,10 +79,20 @@ public class ConferenceClient extends JFrame implements ActionListener
 			receiver = new ClientReceiver(sessions, bufferSize);
 			if (!(receiver.initalize()))
 			{
-				System.out.println("FAILED to initialize the sessions.");
+				System.out.println("FAILED to initialize a session");
 				System.exit(-1);
 			}
-
+			
+			receiverList.add(receiver);
+			
+			receiver = new ClientReceiver(sessions, bufferSize);
+			if (!(receiver.initalize()))
+			{
+				System.out.println("FAILED to initialize a session");
+				System.exit(-1);
+			}
+			
+			receiverList.add(receiver);
 		}
 	}
 	

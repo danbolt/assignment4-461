@@ -258,7 +258,7 @@ public class ClientBroadcaster implements ControllerListener
 
 					localAddr = new SessionAddress(InetAddress.getLocalHost(), lport);
 					destAddr = new SessionAddress(ipAddr, dport, 1);
-					
+
 					managers[i].initialize(localAddr);
 					managers[i].addTarget(destAddr);
 					
@@ -278,13 +278,19 @@ public class ClientBroadcaster implements ControllerListener
 			PP = new BroadcasterGUI(player);
 			rootApplication.basePanel.add("Center", PP);
 			rootApplication.validate();
-			
+
 			processor.start();
 			player.start();
 		}
 		else if (event instanceof EndOfMediaEvent)
 		{
-			this.stop();
+			processor.setMediaTime(new Time(0.));
+			processor.start();
+
+			player.setMediaTime(new Time(0.));
+			player.start();
+			
+			//this.stop();
 		}
 		else if (event instanceof ControllerErrorEvent)
 		{
