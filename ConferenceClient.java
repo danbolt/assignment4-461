@@ -12,6 +12,7 @@ import javax.swing.JComponent;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import javax.swing.JOptionPane;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FileDialog;
@@ -47,6 +48,9 @@ public class ConferenceClient extends JFrame implements ActionListener
 	String[] columns = {"Name", "Multicast IP", "Port"};
 	String[][] rowData = {{"foo", "test", "test"}};
 	
+	private String outputIP = null;
+	private int outputPort = -1;
+	
 	private boolean sending;
 
 	/* END OF TEMP TESTING CODE (LOLOLOL AGILE SCRUM PROTOTYPING ETC) */
@@ -67,6 +71,16 @@ public class ConferenceClient extends JFrame implements ActionListener
 		infoList.add(new ClientInfo("224.0.0.200", "jake", 10000));
 
 		sending = isSending;
+		
+		//prompt for streaming data from user
+		{
+			JTextField ipAddressField = new JTextField();
+			JTextField portField = new JTextField();
+			final JComponent[] inputs = new JComponent[] { new JLabel("Mulicast IP"), ipAddressField, new JLabel("Multicast Port"), portField};
+			JOptionPane.showMessageDialog(null, inputs, "Please enter your multicast information.", JOptionPane.PLAIN_MESSAGE);
+			outputIP = ipAddressField.getText();
+			outputPort = Integer.parseInt(portField.getText());
+		}
 
 		this.setSize(300, 300);
 		initalize();
@@ -149,54 +163,10 @@ public class ConferenceClient extends JFrame implements ActionListener
 		add(tabs);
 
 		this.setVisible(true);
-		
-		if (sending)
-		{
-			stream = new ClientBroadcaster(new MediaLocator("file:samples/test-mpeg.mpg"), infoList.get(0).ip, infoList.get(0).port, 0.5f, this);
-			stream.start();
-			
-			/*
 
-			String[] sessions = new String[2];
-			sessions[0] = infoList.get(1).ip + '/' + infoList.get(1).port;
-			sessions[1] = infoList.get(1).ip + '/' + (infoList.get(1).port+2);
-			
-			int bufferSize = 350;
-	
-			receiver = new ClientReceiver(sessions, bufferSize);
-			if (!(receiver.initalize()))
-			{
-				System.out.println("FAILED to initialize a session");
-				System.exit(-1);
-			}
-			
-			receiverList.add(receiver);
-			
-			*/
-		}
-		else
-		{
+		stream = new ClientBroadcaster(new MediaLocator("file:samples/test-mpeg.mpg"), outputIP, outputPort, 0.5f, this);
+		stream.start();
 
-			stream = new ClientBroadcaster(new MediaLocator("file:samples/test-mpeg.mpg"), infoList.get(1).ip, infoList.get(1).port, 0.5f, this);
-			stream.start();
-	
-	/*
-			String[] sessions = new String[2];
-			sessions[0] = infoList.get(0).ip + '/' + infoList.get(0).port;
-			sessions[1] = infoList.get(0).ip + '/' + (infoList.get(0).port+2);
-
-			int bufferSize = 350;
-	
-			receiver = new ClientReceiver(sessions, bufferSize);
-			if (!(receiver.initalize()))
-			{
-				System.out.println("FAILED to initialize a session");
-				System.exit(-1);
-			}
-
-			receiverList.add(receiver);
-			*/
-		}
 	}
 	
 	public void actionPerformed (ActionEvent e)
