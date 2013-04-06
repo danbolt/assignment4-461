@@ -7,12 +7,14 @@ public class ClientConnection implements Runnable {
     InetAddress addr;
     InetAddress serverAddr;
     int port;
+    String name;
     ArrayList<ClientInfo> participants = new ArrayList(); //List containing information about other participants
 
-    public ClientConnection (InetAddress addr, InetAddress serverAddr, int port) {
+    public ClientConnection (InetAddress addr, InetAddress serverAddr, int port, String name) {
 	    this.addr = addr;
 	    this.port = port;
 	    this.serverAddr = serverAddr;
+	    this.name = name;
     }
 
     public synchronized ArrayList getParticpants () {
@@ -55,6 +57,10 @@ public class ClientConnection implements Runnable {
 			        this.addParticipantToList(inMessage);
 		        }
 	        }
+	        
+	        for (int i = 0; i < participants.size(); i++) {
+                    System.out.println(participants.get(i).name);
+                }
 	    } catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -70,14 +76,16 @@ public class ClientConnection implements Runnable {
 
 		try{
 
-					      serverAddr = InetAddress.getLocalHost();
-					      socket = new Socket(addr, port);
+
+					      socket = new Socket(serverAddr, port);
 
 					      os = socket.getOutputStream();
 					      out = new ObjectOutputStream(os);
 
 					      is = socket.getInputStream();
 					      in = new ObjectInputStream(is);
+					      
+					      out.writeObject(new ClientInfo(addr.toString(), name, port));
 
 					      while (true) {
 							  processMessage(in);
