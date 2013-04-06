@@ -12,6 +12,9 @@ do
      javac -cp ".;custom.jar" ConferenceClient.java
      javac -cp ".;custom.jar" ClientReceiver.java
      javac -cp ".;custom.jar" ReceiverWindow.java
+     javac -cp ".;custom.jar" ChatServer.java
+     javac -cp ".;custom.jar" ClientConnection.java
+     javac -cp ".;custom.jar" ClientInfo.java
   fi
 
 done

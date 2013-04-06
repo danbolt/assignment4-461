@@ -2,9 +2,9 @@ import java.net.*;
 import java.io.*;
 
 public class ClientInfo implements Serializable {
-    String ip;
-    String name;
-    int port;
+    public String ip;
+    public String name;
+    public int port;
 
     public ClientInfo(String ip, String name, int port){
 	        this.ip = ip;
