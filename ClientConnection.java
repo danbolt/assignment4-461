@@ -23,7 +23,17 @@ public class ClientConnection implements Runnable {
 		return participants.get(i);
 	}
 
-	public void addParticipant(ClientInfo c) {
+	public synchronized void addParticipant(String ip, String name, int port) {
+		try {
+		    ClientInfo outMessage = new ClientInfo(ip, name, port);
+
+		    out.writeObject(outMessage);
+	    } catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	public void addParticipantToList(ClientInfo c) {
 		participants.add(c);
 	}
 
@@ -31,7 +41,7 @@ public class ClientConnection implements Runnable {
 		participants = new ArrayList();
 	}
 
-	public synchronized void  processMessage(ObjectInputStream in) {
+	public synchronized void processMessage(ObjectInputStream in) {
 		try {
 		    ClientInfo inMessage = (ClientInfo)in.readObject();
 
@@ -42,7 +52,7 @@ public class ClientConnection implements Runnable {
 		        } else if (inMessage.ip.equals("NEW")) {
 			        this.wipeParticipants();
 		        } else if (inMessage.ip != null) {  //If new participant
-			        this.addParticipant(inMessage);
+			        this.addParticipantToList(inMessage);
 		        }
 	        }
 	    } catch (Exception e) {
