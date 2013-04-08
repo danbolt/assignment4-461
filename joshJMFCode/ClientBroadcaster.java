@@ -19,8 +19,7 @@ import javax.media.control.QualityControl;
 import java.io.*;
 import java.net.InetAddress;
 
-public class ClientBroadcaster implements ControllerListener
-{
+public class ClientBroadcaster implements ControllerListener {
 	private MediaLocator locator = null;
 	private String ipAddress = null;
 	
@@ -39,8 +38,7 @@ public class ClientBroadcaster implements ControllerListener
 	
 	DataSource output = null;
 	
-	public ClientBroadcaster (MediaLocator locator, String ip, int portBase, float quality, ConferenceClient parent)
-	{
+	public ClientBroadcaster (MediaLocator locator, String ip, int portBase, float quality, ConferenceClient parent) {
 		this.locator = locator;
 		ipAddress = ip;
 		port = portBase - 1;
@@ -51,74 +49,59 @@ public class ClientBroadcaster implements ControllerListener
 		managers[1] = null;
 	}
 	
-	public synchronized void start ()
-	{
-		if (locator == null)
-		{
+	public synchronized void start () {
+		if (locator == null) {
 			perror("Media Locator is null");
 		}
 		
 		DataSource sourceA = null;
 		DataSource sourceB = null;
 		
-		try
-		{
+		try {
 			sourceA = Manager.createDataSource(locator);
 			sourceB = Manager.createDataSource(locator);
 		}
-		catch (Exception e)
-		{
+		catch (Exception e) {
 			perror("failed to create DataSource objects");
 		}
 		
-		try
-		{
+		try {
 			processor = Manager.createProcessor(sourceA);
 			player = Manager.createPlayer(sourceB);
 		}
-		catch (NoProcessorException npe)
-		{
+		catch (NoProcessorException npe) {
 			perror("failed to create processor for media");
 		}
-		catch (Exception ioe)
-		{
+		catch (Exception ioe) {
 			perror("IOException when creating processors");
 		}
 		
-		try
-		{
+		try {
 			player.addControllerListener(new PlayerListener(PP, this, player, processor));
 			processor.addControllerListener(this);
 			
 			processor.configure();
 		}
-		catch (Exception npe)
-		{
+		catch (Exception npe) {
 			perror("could not configure processor");
 		}
 	}
 
-	public void stop()
-	{
-		synchronized (this)
-		{
-			if (player != null)
-			{
+	public void stop() {
+		synchronized (this) {
+			if (player != null) {
 				player.stop();
 				player.close();
 				player = null;
 			}
 			
-			if (processor != null)
-			{
+			if (processor != null) {
 				processor.stop();
 				processor.close();
 				processor = null;
 				
-				for (int i = 0; i < managers.length; i++)
-				{
-					if (managers[i] != null)
-					{
+				for (int i = 0; i < managers.length; i++) {
+					if (managers[i] != null) {
 						managers[i].removeTargets("Session ended.");
 						managers[i].dispose();
 						managers[i] = null;
@@ -127,39 +110,31 @@ public class ClientBroadcaster implements ControllerListener
 			}
 		}
 		
-		if (PP != null)
-		{
+		if (PP != null) {
 			rootApplication.basePanel.remove(PP);
 			PP = null;
 		}
 	}
 	
-	private void perror(String s)
-	{
+	private void perror(String s) {
 		System.out.println("BAD ERROR: " + s);
 		System.exit(-1);
 	}
 	
-	void setImageQuality(Player p, float value)
-	{
+	void setImageQuality(Player p, float value) {
 		Control[] cs = p.getControls();
 		QualityControl qc = null;
 		VideoFormat jpegFmt = new VideoFormat(VideoFormat.JPEG);
 		
-		for (int i = 0; i < cs.length; i++)
-		{
-			if (cs[i] instanceof QualityControl && cs[i] instanceof Owned)
-			{
+		for (int i = 0; i < cs.length; i++) {
+			if (cs[i] instanceof QualityControl && cs[i] instanceof Owned) {
 				Object owner = ((Owned)cs[i]).getOwner();
 
-				if (owner instanceof Codec)
-				{
+				if (owner instanceof Codec) {
 					Format fmts[] = ((Codec)owner).getSupportedOutputFormats(null);
 					
-					for (int j = 0; j < fmts.length; j++)
-					{
-						if (fmts[j].matches(jpegFmt))
-						{
+					for (int j = 0; j < fmts.length; j++) {
+						if (fmts[j].matches(jpegFmt)) {
 							qc = (QualityControl)cs[i];
 							qc.setQuality(value);
 							System.out.println("-- setting JPEG quality at " + value + " on " + qc);
@@ -168,39 +143,32 @@ public class ClientBroadcaster implements ControllerListener
 					}
 				}
 				
-				if (qc != null)
-				{
+				if (qc != null) {
 					break;
 				}
 			}
 		}
 	}
 
-	public synchronized void controllerUpdate (ControllerEvent event)
-	{
-		if (processor == null)
-		{
+	public synchronized void controllerUpdate (ControllerEvent event) {
+		if (processor == null) {
 			return;
 		}
 		
 		System.out.println("ControllerEvent: " + event.toString());
-		if (event instanceof ConfigureCompleteEvent)
-		{
+		if (event instanceof ConfigureCompleteEvent) {
 			TrackControl[] tracks = processor.getTrackControls();
 			
-			if (tracks == null || tracks.length < 1)
-			{
+			if (tracks == null || tracks.length < 1) {
 				perror("couldn't find any tracks in the processor");
 			}
 			
 			boolean programmed = false;
 			
-			for (int i = 0; i < tracks.length; i++)
-			{
+			for (int i = 0; i < tracks.length; i++) {
 				Format format = tracks[i].getFormat();
 				
-				if (tracks[i].isEnabled() && format instanceof VideoFormat && !programmed)
-				{
+				if (tracks[i].isEnabled() && format instanceof VideoFormat && !programmed) {
 					Dimension size = ((VideoFormat)format).getSize();
 					float frameRate = ((VideoFormat)format).getFrameRate();
 					int w = (size.width % 8 == 0 ? size.width : (int)(size.width / 8) * 8);
@@ -216,8 +184,7 @@ public class ClientBroadcaster implements ControllerListener
 				}
 			}
 			
-			if (!programmed)
-			{
+			if (!programmed) {
 				perror("Couldn't find any video tracks available");
 			}	
 			
@@ -227,8 +194,7 @@ public class ClientBroadcaster implements ControllerListener
 			processor.realize();
 			player.realize();
 		}
-		else if (event instanceof RealizeCompleteEvent)
-		{
+		else if (event instanceof RealizeCompleteEvent) {
 			//SET THE JPEG QUALITY
 			setImageQuality(processor, mediaQuality);
 			
@@ -246,10 +212,8 @@ public class ClientBroadcaster implements ControllerListener
 			int dport;
 			SourceDescription srcDesList[];
 			
-			for (int i = 0; i < pbss.length; i++)
-			{
-				try
-				{
+			for (int i = 0; i < pbss.length; i++) {
+				try {
 					managers[i] = RTPManager.newInstance();
 
 					dport = port+1 + 2*i;
@@ -267,14 +231,12 @@ public class ClientBroadcaster implements ControllerListener
 					sendStream = managers[i].createSendStream(output, i);
 					sendStream.start();
 				}
-				catch (Exception e)
-				{
+				catch (Exception e) {
 					//
 				}
 			}
 		}
-		else if (event instanceof PrefetchCompleteEvent)
-		{
+		else if (event instanceof PrefetchCompleteEvent) {
 			PP = new BroadcasterGUI(player);
 			rootApplication.basePanel.add("Center", PP);
 			rootApplication.validate();
@@ -282,8 +244,7 @@ public class ClientBroadcaster implements ControllerListener
 			processor.start();
 			player.start();
 		}
-		else if (event instanceof EndOfMediaEvent)
-		{
+		else if (event instanceof EndOfMediaEvent) {
 			processor.setMediaTime(new Time(0.));
 			processor.start();
 
@@ -292,58 +253,48 @@ public class ClientBroadcaster implements ControllerListener
 			
 			//this.stop();
 		}
-		else if (event instanceof ControllerErrorEvent)
-		{
+		else if (event instanceof ControllerErrorEvent) {
 			processor = null;
 			perror(((ControllerErrorEvent)event).getMessage());
 		}
-		else if (event instanceof ControllerClosedEvent)
-		{
+		else if (event instanceof ControllerClosedEvent) {
 			//
 		}
 	}
 }
 
-class BroadcasterGUI extends Panel
-{
+class BroadcasterGUI extends Panel {
 	Component vc, cc;
 	
-	BroadcasterGUI (Player p)
-	{
+	BroadcasterGUI (Player p) {
 		setLayout (new BorderLayout());
 		
-		if ((vc = p.getVisualComponent()) != null)
-		{
+		if ((vc = p.getVisualComponent()) != null) {
 			add("Center", vc);
 		}
 	}
 	
-	public Dimension getPrefferedSize()
-	{
+	public Dimension getPrefferedSize() {
 		int w = 0;
 		int h = 0;
 		
-		if (vc != null)
-		{
+		if (vc != null) {
 			Dimension size = vc.getPreferredSize();
 			w = size.width;
 			h = size.height;
 		}
 		
-		if (cc != null)
-		{
+		if (cc != null) {
 			Dimension size = cc.getPreferredSize();
 			
-			if (w == 0)
-			{
+			if (w == 0) {
 				w = size.width;
 			}
 			
 			h = size.height;
 		}
 		
-		if (w < 160)
-		{
+		if (w < 160) {
 			w = 160;
 		}
 		
@@ -351,29 +302,24 @@ class BroadcasterGUI extends Panel
 	}
 }
 
-class PlayerListener implements ControllerListener
-{
+class PlayerListener implements ControllerListener {
 	BroadcasterGUI PP;
 	ClientBroadcaster mediaSender;
 	Player P;
 	Processor PR;
 	
-	public PlayerListener (BroadcasterGUI PP, ClientBroadcaster MS, Player P, Processor PR)
-	{
+	public PlayerListener (BroadcasterGUI PP, ClientBroadcaster MS, Player P, Processor PR) {
 		this.PP = PP;
 		this.mediaSender = MS;
 		this.P = P;
 		this.PR = PR;
 	}
 
-	public synchronized void controllerUpdate(ControllerEvent event)
-	{
-		if (event instanceof RealizeCompleteEvent)
-		{
+	public synchronized void controllerUpdate(ControllerEvent event) {
+		if (event instanceof RealizeCompleteEvent) {
 			PR.prefetch();
 		}
-		else if (event instanceof EndOfMediaEvent)
-		{
+		else if (event instanceof EndOfMediaEvent) {
 			mediaSender.stop();
 		}
 	}

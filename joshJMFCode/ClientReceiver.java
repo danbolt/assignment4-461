@@ -21,8 +21,7 @@ import javax.media.control.BufferControl;
 /**
  * MediaReceiver to receive RTP transmission using the RTPManagers.
  */
-public class ClientReceiver implements ReceiveStreamListener, SessionListener,ControllerListener
-{
+public class ClientReceiver implements ReceiveStreamListener, SessionListener,ControllerListener {
 	String mediaSessions[] = null;
 	RTPManager managers[] = null;
 	
@@ -41,24 +40,20 @@ public class ClientReceiver implements ReceiveStreamListener, SessionListener,Co
 	
 	String remoteUserName;
 
-	public ClientReceiver (String sessions[], int allocatedBufferSize, String remoteUserName)
-	{
+	public ClientReceiver (String sessions[], int allocatedBufferSize, String remoteUserName) {
 		mediaSessions = sessions;
 		mediaBufferSize = allocatedBufferSize;
 		managers = new RTPManager[sessions.length];
 		
 		this.remoteUserName = remoteUserName;
 		
-		for (int i = 0; i < sessions.length; i++)
-		{
+		for (int i = 0; i < sessions.length; i++) {
 			managers[i] = null;
 		}
 	}
 	
-	protected boolean initalize ()
-	{
-		try
-		{
+	protected boolean initalize () {
+		try {
 			InetAddress addr;
 			SessionAddress localAddr = new SessionAddress();
 			SessionAddress destAddr;
@@ -69,14 +64,11 @@ public class ClientReceiver implements ReceiveStreamListener, SessionListener,Co
 			
 			SessionLabel session;
 			
-			for (int i = 0; i < mediaSessions.length; i++)
-			{
-				try
-				{
+			for (int i = 0; i < mediaSessions.length; i++) {
+				try {
 					session = new SessionLabel(mediaSessions[i]);
 				}
-				catch (IllegalArgumentException e)
-				{
+				catch (IllegalArgumentException e) {
 					System.out.println("Totally failed at parsing the session address: " + mediaSessions[i]);
 					return false;
 				}
@@ -89,13 +81,11 @@ public class ClientReceiver implements ReceiveStreamListener, SessionListener,Co
 				
 				addr = InetAddress.getByName(session.addr);
 				
-				if (addr.isMulticastAddress())
-				{
+				if (addr.isMulticastAddress()) {
 					localAddr = new SessionAddress(addr, session.port, session.ttl);
 					destAddr = new SessionAddress(addr, session.port, session.ttl);
 				}
-				else
-				{
+				else {
 					localAddr = new SessionAddress(InetAddress.getLocalHost(), session.port);
 					destAddr = new SessionAddress(addr, session.port);
 				}
@@ -103,16 +93,14 @@ public class ClientReceiver implements ReceiveStreamListener, SessionListener,Co
 				managers[i].initialize(localAddr);
 				
 				BufferControl bc = (BufferControl)managers[i].getControl("javax.media.control.BufferControl");
-				if (bc != null)
-				{
+				if (bc != null) {
 					bc.setBufferLength(this.mediaBufferSize);
 				}
 				
 				managers[i].addTarget(destAddr);
 			}
 		}
-		catch (Exception e)
-		{
+		catch (Exception e) {
 			System.out.println("Cannot create an RTP session: " + e.getMessage());
 			return false;
 		}
@@ -122,17 +110,13 @@ public class ClientReceiver implements ReceiveStreamListener, SessionListener,Co
 		return true;
 	}
 	
-	public boolean isFinished()
-	{
+	public boolean isFinished() {
 		return this.receivedEventsSoFar == mediaSessions.length;
 	}
 	
-	protected void close ()
-	{
-		synchronized(this)
-		{
-			if (PP != null)
-			{
+	protected void close () {
+		synchronized(this) {
+			if (PP != null) {
 				rootApplication.basePanel.remove(PP);
 				
 				rootApplication.dispose();
@@ -141,8 +125,7 @@ public class ClientReceiver implements ReceiveStreamListener, SessionListener,Co
 				PP = null;
 			}
 
-			if (p != null)
-			{
+			if (p != null) {
 				p.stop();
 				//p.collaborate();
 				//p.listen();
@@ -152,18 +135,14 @@ public class ClientReceiver implements ReceiveStreamListener, SessionListener,Co
 			}
 			
 			//terminate RTP connections
-			for (int i = 0; i < this.managers.length; i++)
-			{
-				if (managers[i] != null)
-				{
-					try
-					{
+			for (int i = 0; i < this.managers.length; i++) {
+				if (managers[i] != null) {
+					try {
 						managers[i].removeTargets("terminating RTP session");
 						managers[i].dispose();
 						managers[i] = null;
 					}
-					catch (Exception e)
-					{
+					catch (Exception e) {
 						//do nothing I guess
 					}
 				}
@@ -177,65 +156,52 @@ public class ClientReceiver implements ReceiveStreamListener, SessionListener,Co
 	
 	// interface update functions
 	
-	public synchronized void update (SessionEvent evt)
-	{
-		if (evt instanceof NewParticipantEvent)
-		{
+	public synchronized void update (SessionEvent evt) {
+		if (evt instanceof NewParticipantEvent) {
 			Participant p = ((NewParticipantEvent)evt).getParticipant();
 			System.out.println(" A new participant/challenger approaches: " + p.getCNAME());
 		}
 	}
 	
-	public synchronized void update (ReceiveStreamEvent evt)
-	{
+	public synchronized void update (ReceiveStreamEvent evt) {
 		RTPManager mgr = (RTPManager)evt.getSource();
 		
 		//the following two declarations may evaluate to null at this point
 		Participant participant = evt.getParticipant();
 		ReceiveStream stream = evt.getReceiveStream();
 		
-		if (evt instanceof RemotePayloadChangeEvent)
-		{
+		if (evt instanceof RemotePayloadChangeEvent) {
 			System.out.println("Received PayloadChangeEvent (RTP)");
 			System.out.println("Sorry, cannot handle the change in payload");
 			System.exit(0);
 		}
-		else if (evt instanceof NewReceiveStreamEvent)
-		{
-			try
-			{
+		else if (evt instanceof NewReceiveStreamEvent) {
+			try {
 				stream = ((NewReceiveStreamEvent)evt).getReceiveStream();
 				sources[receivedEventsSoFar] = stream.getDataSource();
 
 				RTPControl ctl = (RTPControl)sources[receivedEventsSoFar].getControl("javax.media.rtp.RTPControl");
-				if (ctl != null)
-				{
+				if (ctl != null) {
 					System.out.println(" - Recevied new RTP stream: " + ctl.getFormat());
 				}
-				else
-				{
+				else {
 					System.out.println(" - Recevied new RTP stream");
 				}
 				
-				if (participant == null)
-				{
+				if (participant == null) {
 					System.out.println("The RTP stream sender hasn't been identified.");
 				}
-				else
-				{
+				else {
 					System.out.println("The name of the RTP stream sender is: " + participant.getCNAME());
-					if (rootApplication != null)
-					{
+					if (rootApplication != null) {
 						rootApplication.setTitle(remoteUserName);
 					}
 				}
 
-				if (++receivedEventsSoFar == mediaSessions.length)
-				{
+				if (++receivedEventsSoFar == mediaSessions.length) {
 					DataSource mergedSource = Manager.createMergingDataSource(sources);
 					p = javax.media.Manager.createPlayer(mergedSource);
-					if (p == null)
-					{
+					if (p == null) {
 						return;
 					}
 
@@ -243,40 +209,33 @@ public class ClientReceiver implements ReceiveStreamListener, SessionListener,Co
 					p.realize();
 				}
 
-				synchronized (dataSync)
-				{
+				synchronized (dataSync) {
 					sourceFound = true;
 					dataSync.notifyAll();
 				}
 			}
-			catch (Exception e)
-			{
+			catch (Exception e) {
 				System.out.println("NewReceiveStreamEvent exception:");
 				e.printStackTrace();
 				return;
 			}
 		}
-		else if (evt instanceof StreamMappedEvent)
-		{
-			if (stream != null && stream.getDataSource() != null)
-			{
+		else if (evt instanceof StreamMappedEvent) {
+			if (stream != null && stream.getDataSource() != null) {
 				DataSource ds = stream.getDataSource();
 				
 				RTPControl ctl = (RTPControl)ds.getControl("javax.media.rtp.RTPControl");
 				System.out.print("The previously unidentified stream: ");
-				if (ctl != null)
-				{
+				if (ctl != null) {
 					System.out.print(ctl.getFormat() + " ");
 				}
 				System.out.println("had now been identified as sent by: " + participant.getCNAME());
-				if (rootApplication != null)
-				{
+				if (rootApplication != null) {
 					rootApplication.setTitle(remoteUserName);
 				}
 			}
 		}
-		else if (evt instanceof ByeEvent)
-		{
+		else if (evt instanceof ByeEvent) {
 			System.out.println("Got a BYE signal from: " + participant.getCNAME());
 			
 			//GUI related stuff for setting buttons
@@ -285,18 +244,14 @@ public class ClientReceiver implements ReceiveStreamListener, SessionListener,Co
 		}
 	}
 	
-	public synchronized void controllerUpdate(ControllerEvent ce)
-	{
-		if (ce instanceof RealizeCompleteEvent)
-		{
+	public synchronized void controllerUpdate(ControllerEvent ce) {
+		if (ce instanceof RealizeCompleteEvent) {
 			PP = new ReceiverGUI(p);
 
 			rootApplication = new ReceiverWindow("Receiver Window", this);
-			rootApplication.addWindowListener(new java.awt.event.WindowAdapter()
-			{
+			rootApplication.addWindowListener(new java.awt.event.WindowAdapter() {
 				@Override
-				public void windowClosing(java.awt.event.WindowEvent windowEvent)
-				{
+				public void windowClosing(java.awt.event.WindowEvent windowEvent) {
 					close();
 				}
 			});
@@ -307,8 +262,7 @@ public class ClientReceiver implements ReceiveStreamListener, SessionListener,Co
 			p.start();
 		}
 
-		if (ce instanceof ControllerErrorEvent)
-		{
+		if (ce instanceof ControllerErrorEvent) {
 			p.removeControllerListener(this);
 			this.close();
 			System.out.println("INTERNAL ERROR::: " + ce);
@@ -316,43 +270,35 @@ public class ClientReceiver implements ReceiveStreamListener, SessionListener,Co
 	}
 }
 
-class ReceiverGUI extends Panel
-{
+class ReceiverGUI extends Panel {
 	Component vc, cc;
 	
-	ReceiverGUI (Player pl)
-	{
+	ReceiverGUI (Player pl) {
 		setLayout(new BorderLayout());
-		if ((vc = pl.getVisualComponent()) != null)
-		{
+		if ((vc = pl.getVisualComponent()) != null) {
 			add("Center", vc);
 		}
 	}
 
-	public Dimension getPreferredSize()
-	{
+	public Dimension getPreferredSize() {
 		int w = 0;
 		int h = 0;
 		
-		if (vc != null)
-		{
+		if (vc != null) {
 			Dimension size = vc.getPreferredSize();
 			w = size.width;
 			h = size.height;
 		}
 		
-		if (cc != null)
-		{
+		if (cc != null) {
 			Dimension size = cc.getPreferredSize();
-			if (w == 0)
-			{
+			if (w == 0) {
 				w = size.width;
 			}
 			h += size.height;
 		}
 		
-		if (w < 160)
-		{
+		if (w < 160) {
 			w = 160;
 		}
 		
@@ -361,12 +307,7 @@ class ReceiverGUI extends Panel
 }
 
 
-/// THE NEXT CLASS WAS NOT WRITTEN BY DANIEL SAVAGE
-/// IT WAS COPIED FROM THE EXAMPLE SOLUTION FOR
-/// ASSIGNMENT 2 PROVIDED BY THE LAB INSTRUCTOR
-///
-/// IT'S PURPOSE IS ALMOST ENTIRELY FOR STRING PARSING,
-/// AND WAS CONSIDERED BY THE STUDENT TO BE TRIVIAL IN NATURE
+/// this code was copy/pasted from the assignment 2 solution
 
     /**
      * A utility class to parse the session addresses.
