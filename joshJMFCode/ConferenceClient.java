@@ -29,6 +29,9 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.KeyEvent;
 
+import javax.media.CaptureDeviceInfo;
+import javax.media.CaptureDeviceManager;
+import javax.media.control.FormatControl;
 import javax.media.ControllerListener;
 import javax.media.MediaLocator;
 import javax.media.Player;
@@ -185,6 +188,21 @@ public class ConferenceClient extends JFrame implements ActionListener {
 		add(tabs);
 
 		this.setVisible(true);
+		
+		/* 
+		//non-working webcam code
+		CaptureDeviceInfo webcamInfo = null;
+		
+		Vector<CaptureDeviceInfo> camlist = CaptureDeviceManager.getDeviceList(null);
+		
+		for (CaptureDeviceInfo cam : camlist) {
+			if (cam.getName().startsWith("vfw:")) {
+				webcamInfo = cam;
+				break;
+			}
+		}
+		stream = new ClientBroadcaster(webcamInfo.getLocator(), outputIP, outputPort, 0.5f, this);
+		*/
 
 		stream = new ClientBroadcaster(new MediaLocator("file:samples/test-mpeg.mpg"), outputIP, outputPort, 0.5f, this);
 		stream.start();
