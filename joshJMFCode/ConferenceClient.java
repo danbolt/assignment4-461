@@ -37,8 +37,7 @@ import javax.media.rtp.ReceiveStream;
 
 import java.util.ArrayList;
 
-public class ConferenceClient extends JFrame implements ActionListener
-{
+public class ConferenceClient extends JFrame implements ActionListener {
 	ClientConnection serverConnection = null;
 	
 	ClientBroadcaster stream = null;
@@ -66,8 +65,7 @@ public class ConferenceClient extends JFrame implements ActionListener
 	
 	Thread t = null;
 
-	public ConferenceClient ()
-	{
+	public ConferenceClient () {
 		super("Hermes ::: " + System.getProperty("user.name"));
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
@@ -77,46 +75,37 @@ public class ConferenceClient extends JFrame implements ActionListener
 		infoList.add(new ClientInfo("224.0.0.100", "finn", 9000));
 		infoList.add(new ClientInfo("224.0.0.200", "jake", 10000));
 		
-		this.addWindowListener(new java.awt.event.WindowAdapter()
-		{
+		this.addWindowListener(new java.awt.event.WindowAdapter() {
 			@Override
-			public void windowClosing(java.awt.event.WindowEvent windowEvent)
-			{
-				if (t != null)
-				{
+			public void windowClosing(java.awt.event.WindowEvent windowEvent) {
+				if (t != null) {
 					t.interrupt();
 				}
 			}
 		});
 
 		//prompt for streaming data from user
-		{
-			JTextField ipAddressField = new JTextField();
-			JTextField portField = new JTextField();
-			final JComponent[] inputs = new JComponent[] { new JLabel("Mulicast IP"), ipAddressField, new JLabel("Multicast Port"), portField};
-			JOptionPane.showMessageDialog(null, inputs, "Please enter your multicast information.", JOptionPane.PLAIN_MESSAGE);
-			outputIP = ipAddressField.getText();
-			outputPort = Integer.parseInt(portField.getText());
-		}
+		JTextField ipAddressField = new JTextField();
+		JTextField portField = new JTextField();
+		final JComponent[] inputs = new JComponent[] { new JLabel("Mulicast IP"), ipAddressField, new JLabel("Multicast Port"), portField};
+		JOptionPane.showMessageDialog(null, inputs, "Please enter your multicast information.", JOptionPane.PLAIN_MESSAGE);
+		outputIP = ipAddressField.getText();
+		outputPort = Integer.parseInt(portField.getText());
 		
 		//prompt for server information
-		{
-			JTextField ipAddressField = new JTextField();
-			JTextField portField = new JTextField();
-			final JComponent[] inputs = new JComponent[] { new JLabel("Server IP"), ipAddressField, new JLabel("Server Port"), portField};
-			JOptionPane.showMessageDialog(null, inputs, "Please enter the server data", JOptionPane.PLAIN_MESSAGE);
-			serverIP = ipAddressField.getText();
-			serverPort = Integer.parseInt(portField.getText());
-		}
+		JTextField ipAddressField = new JTextField();
+		JTextField portField = new JTextField();
+		final JComponent[] inputs = new JComponent[] { new JLabel("Server IP"), ipAddressField, new JLabel("Server Port"), portField};
+		JOptionPane.showMessageDialog(null, inputs, "Please enter the server data", JOptionPane.PLAIN_MESSAGE);
+		serverIP = ipAddressField.getText();
+		serverPort = Integer.parseInt(portField.getText());
 		
-		try
-		{
+		try {
 			serverConnection = new ClientConnection(InetAddress.getByName(outputIP), InetAddress.getByName(serverIP), serverPort, System.getProperty("user.name"), outputPort);
 			t = new Thread(serverConnection);
 			t.start();
 		}
-		catch (Exception e)
-		{
+		catch (Exception e) {
 			System.out.println("Error creating server connection");
 			e.printStackTrace();
 			System.exit(1);
@@ -126,17 +115,14 @@ public class ConferenceClient extends JFrame implements ActionListener
 		initalize();
 	}
 	
-	private void fillRefreshTable (ArrayList<ClientInfo> clients)
-	{
-		if (clients == null)
-		{
+	private void fillRefreshTable (ArrayList<ClientInfo> clients) {
+		if (clients == null) {
 			return;
 		}
 
 		ArrayList<String[]> formattedRows = new ArrayList<String[]>();
 		
-		for (ClientInfo c : clients)
-		{
+		for (ClientInfo c : clients) {
 			String[] row = {c.name, c.ip, Integer.toString(c.port)};
 			formattedRows.add(row);
 		}
@@ -150,8 +136,7 @@ public class ConferenceClient extends JFrame implements ActionListener
 		clientsTable.setModel(newModel);
 	}
 
-	public void initalize ()
-	{
+	public void initalize () {
 		tabs = new JTabbedPane();
 
 		basePanel = new JPanel(false);
@@ -160,19 +145,14 @@ public class ConferenceClient extends JFrame implements ActionListener
 		
 		clientsPanel = new JPanel(false);
 		clientsPanel.setLayout(new BorderLayout());
-		clientsTable = new JTable(rowData, columns)
-		{
-			public boolean isCellEditable(int row, int column)
-			{
+		clientsTable = new JTable(rowData, columns) {
+			public boolean isCellEditable(int row, int column) {
 				return false;
 			}
 		};
-		clientsTable.addMouseListener(new MouseAdapter()
-		{
-			public void mouseClicked(MouseEvent e)
-			{
-				if (e.getClickCount() == 2)
-				{
+		clientsTable.addMouseListener(new MouseAdapter() {
+			public void mouseClicked(MouseEvent e) {
+				if (e.getClickCount() == 2) {
 					JTable target = (JTable)e.getSource();
 					int row = target.getSelectedRow();
 					int column = target.getSelectedColumn();
@@ -186,8 +166,7 @@ public class ConferenceClient extends JFrame implements ActionListener
 					int bufferSize = 350;
 			
 					receiver = new ClientReceiver(sessions, bufferSize, (String)(clientsTable.getValueAt(row, 0)));
-					if (!(receiver.initalize()))
-					{
+					if (!(receiver.initalize())) {
 						System.out.println("FAILED to initialize a session");
 						System.exit(-1);
 					}
@@ -212,17 +191,14 @@ public class ConferenceClient extends JFrame implements ActionListener
 
 	}
 	
-	public void actionPerformed (ActionEvent e)
-	{
-		if ("refillTable".equals(e.getActionCommand()))
-		{
+	public void actionPerformed (ActionEvent e) {
+		if ("refillTable".equals(e.getActionCommand())) {
 			infoList = serverConnection.getParticpants();
 			fillRefreshTable(infoList);
 		}
 	}
 
-	public static void main (String[] args)
-	{
+	public static void main (String[] args) {
 		new ConferenceClient();
 	}
 }
