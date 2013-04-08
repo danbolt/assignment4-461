@@ -60,15 +60,11 @@ public class ConferenceClient extends JFrame implements ActionListener
 	private String serverIP = null;
 	private int serverPort = -1;
 	
-	private boolean sending;
-
-	/* END OF TEMP TESTING CODE (LOLOLOL AGILE SCRUM PROTOTYPING ETC) */
-	
 	private ArrayList<ClientReceiver> receiverList = null;
 	
 	private ArrayList<ClientInfo> infoList = null;
 
-	public ConferenceClient (boolean isSending)
+	public ConferenceClient ()
 	{
 		super("Hermes ::: " + System.getProperty("user.name"));
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -78,8 +74,6 @@ public class ConferenceClient extends JFrame implements ActionListener
 
 		infoList.add(new ClientInfo("224.0.0.100", "finn", 9000));
 		infoList.add(new ClientInfo("224.0.0.200", "jake", 10000));
-
-		sending = isSending;
 		
 		//prompt for streaming data from user
 		{
@@ -215,13 +209,6 @@ public class ConferenceClient extends JFrame implements ActionListener
 
 	public static void main (String[] args)
 	{
-		if ("send".equals(args[0]))
-		{
-			new ConferenceClient(true);
-		}
-		else if ("recv".equals(args[0]))
-		{
-			new ConferenceClient(false);
-		}
+		new ConferenceClient();
 	}
 }
