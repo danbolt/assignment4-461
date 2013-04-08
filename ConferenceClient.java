@@ -111,7 +111,7 @@ public class ConferenceClient extends JFrame implements ActionListener
 		
 		try
 		{
-			serverConnection = new ClientConnection(InetAddress.getByName(outputIP), InetAddress.getByName(serverIP), serverPort, System.getProperty("user.name"));
+			serverConnection = new ClientConnection(InetAddress.getByName(outputIP), InetAddress.getByName(serverIP), serverPort, System.getProperty("user.name"), outputPort);
 			t = new Thread(serverConnection);
 			t.start();
 		}

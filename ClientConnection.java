@@ -5,6 +5,7 @@ import java.util.*;
 
 public class ClientConnection implements Runnable {
     InetAddress addr;
+    int multicastPort;
     InetAddress serverAddr;
     int port;
     String name;
@@ -16,11 +17,12 @@ public class ClientConnection implements Runnable {
 	InputStream is;
 	ObjectInputStream in;
 
-    public ClientConnection (InetAddress addr, InetAddress serverAddr, int port, String name) {
+    public ClientConnection (InetAddress addr, InetAddress serverAddr, int port, String name, int multicastPort) {
 	    this.addr = addr;
 	    this.port = port;
 	    this.serverAddr = serverAddr;
 	    this.name = name;
+	    this.multicastPort = multicastPort;
     }
 
     public synchronized ArrayList getParticpants () {
@@ -96,13 +98,13 @@ public class ClientConnection implements Runnable {
 					      is = socket.getInputStream();
 					      in = new ObjectInputStream(is);
 
-					      out.writeObject(new ClientInfo(addr.toString().substring(1), name, port));
-					      System.out.println("Sending: " + addr.toString().substring(1) + " " +  name + " " +  port);
+					      out.writeObject(new ClientInfo(addr.toString().substring(1), name, multicastPort));
+					      System.out.println("Sending: " + addr.toString().substring(1) + " " +  name + " " +  multicastPort);
 
 					      while (true) {
 
 							  if (Thread.interrupted()) { //Thread has been told to close
-							      ClientInfo end = new ClientInfo(addr.toString().substring(1), name, port);
+							      ClientInfo end = new ClientInfo(addr.toString().substring(1), name, multicastPort);
 							      end.removeThis = true;
 							      out.writeObject(end);
 
