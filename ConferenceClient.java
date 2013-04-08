@@ -63,18 +63,32 @@ public class ConferenceClient extends JFrame implements ActionListener
 	private ArrayList<ClientReceiver> receiverList = null;
 	
 	private ArrayList<ClientInfo> infoList = null;
+	
+	Thread t = null;
 
 	public ConferenceClient ()
 	{
 		super("Hermes ::: " + System.getProperty("user.name"));
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		
+
 		receiverList = new ArrayList<ClientReceiver>();
 		infoList = new ArrayList<ClientInfo>();
 
 		infoList.add(new ClientInfo("224.0.0.100", "finn", 9000));
 		infoList.add(new ClientInfo("224.0.0.200", "jake", 10000));
 		
+		this.addWindowListener(new java.awt.event.WindowAdapter()
+		{
+			@Override
+			public void windowClosing(java.awt.event.WindowEvent windowEvent)
+			{
+				if (t != null)
+				{
+					t.interrupt();
+				}
+			}
+		});
+
 		//prompt for streaming data from user
 		{
 			JTextField ipAddressField = new JTextField();
@@ -98,7 +112,7 @@ public class ConferenceClient extends JFrame implements ActionListener
 		try
 		{
 			serverConnection = new ClientConnection(InetAddress.getByName(outputIP), InetAddress.getByName(serverIP), serverPort, System.getProperty("user.name"));
-			Thread t = new Thread(serverConnection);
+			t = new Thread(serverConnection);
 			t.start();
 		}
 		catch (Exception e)
