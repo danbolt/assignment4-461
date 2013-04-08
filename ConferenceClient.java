@@ -1,5 +1,6 @@
 import java.net.*;
 import java.io.*;
+import java.util.Vector;
 
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
@@ -29,6 +30,9 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.KeyEvent;
 
+import javax.media.CaptureDeviceInfo;
+import javax.media.CaptureDeviceManager;
+import javax.media.control.FormatControl;
 import javax.media.ControllerListener;
 import javax.media.MediaLocator;
 import javax.media.Player;
@@ -149,6 +153,32 @@ public class ConferenceClient extends JFrame implements ActionListener
 		DefaultTableModel newModel = new DefaultTableModel(rowData, columns);
 		clientsTable.setModel(newModel);
 	}
+	
+	private MediaLocator getWebcam()
+	{
+		CaptureDeviceInfo webcam = null;
+		
+		Vector<CaptureDeviceInfo> potentialWebcamList = CaptureDeviceManager.getDeviceList(null);
+		
+		for (CaptureDeviceInfo dev : potentialWebcamList)
+		{
+			// check if the device is in fact a capture webcam
+			if (dev.getName().startsWith("vfw:"))
+			{
+				webcam = dev;
+				break;
+			}
+		}
+		
+		if (webcam != null)
+		{
+			return webcam.getLocator();
+		}
+		else
+		{
+			return null;
+		}
+	}
 
 	public void initalize ()
 	{
@@ -206,7 +236,8 @@ public class ConferenceClient extends JFrame implements ActionListener
 		add(tabs);
 
 		this.setVisible(true);
-
+		
+		//stream = new ClientBroadcaster(getWebcam(), outputIP, outputPort, 0.5f, this);
 		stream = new ClientBroadcaster(new MediaLocator("file:samples/test-mpeg.mpg"), outputIP, outputPort, 0.5f, this);
 		stream.start();
 
